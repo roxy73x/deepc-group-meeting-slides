@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540">
+<style>
+text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}
+.title{font-size:34px;font-weight:700;fill:#1e40af}
+.box-title{font-size:24px;font-weight:700;fill:#1e40af}
+.body{font-size:19px;fill:#475569}
+.box{fill:white;stroke:#bfdbfe;stroke-width:2}
+.soft{fill:#eff6ff}
+.arrow{stroke:#2563eb;stroke-width:4;marker-end:url(#a)}
+</style>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker></defs>
+<text x="640" y="52" text-anchor="middle" class="title">Literature context: from MPC / DeePC to UAV-aware phase adaptation</text>
+<rect x="65" y="130" width="210" height="120" rx="18" class="box soft"/><text x="170" y="175" text-anchor="middle" class="box-title">Classical MPC</text><text x="170" y="210" text-anchor="middle" class="body">Explicit model</text><text x="170" y="236" text-anchor="middle" class="body">rolling optimization</text>
+<line x1="285" y1="190" x2="375" y2="190" class="arrow"/>
+<rect x="390" y="130" width="220" height="120" rx="18" class="box"/><text x="500" y="175" text-anchor="middle" class="box-title">Original DeePC</text><text x="500" y="210" text-anchor="middle" class="body">Input-output data</text><text x="500" y="236" text-anchor="middle" class="body">behavioral prediction</text>
+<line x1="620" y1="190" x2="710" y2="190" class="arrow"/>
+<rect x="725" y="130" width="260" height="120" rx="18" class="box soft"/><text x="855" y="175" text-anchor="middle" class="box-title">Regularized / Robust DeePC</text><text x="855" y="210" text-anchor="middle" class="body">Noise, uncertainty</text><text x="855" y="236" text-anchor="middle" class="body">regularization</text>
+<line x1="500" y1="260" x2="500" y2="330" class="arrow"/>
+<line x1="855" y1="260" x2="855" y2="330" class="arrow"/>
+<rect x="365" y="345" width="270" height="120" rx="18" class="box soft"/><text x="500" y="390" text-anchor="middle" class="box-title">Data selection / Local data</text><text x="500" y="425" text-anchor="middle" class="body">Relevant data support</text><text x="500" y="451" text-anchor="middle" class="body">lower compute burden</text>
+<line x1="645" y1="405" x2="720" y2="405" class="arrow"/>
+<rect x="735" y="345" width="250" height="120" rx="18" class="box"/><text x="860" y="390" text-anchor="middle" class="box-title">UAV-aware phase design</text><text x="860" y="425" text-anchor="middle" class="body">Maneuver phases</text><text x="860" y="451" text-anchor="middle" class="body">flight envelope</text>
+</svg>

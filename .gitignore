@@ -1,0 +1,4 @@
+node_modules/
+*.pdf
+!figures/*.pdf
+.codex

@@ -1,0 +1,13 @@
+{
+  "name": "deepc-group-meeting-slides",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "pdf": "marp slides.md --pdf --allow-local-files",
+    "pptx": "marp slides.md --pptx --allow-local-files",
+    "html": "marp slides.md --html --allow-local-files"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.2.3"
+  }
+}

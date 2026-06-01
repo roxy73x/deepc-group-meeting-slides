@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+<style>
+text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}
+.title{font-size:30px;font-weight:700;fill:#1e40af}
+.label{font-size:20px;fill:#334155}
+.axis{stroke:#64748b;stroke-width:2}
+.grid{stroke:#e2e8f0;stroke-width:1}
+.ref{fill:none;stroke:#94a3b8;stroke-width:3;stroke-dasharray:8 8}
+.traj{fill:none;stroke:#2563eb;stroke-width:5}
+</style>
+<text x="500" y="55" text-anchor="middle" class="title">Gazebo transfer validation preview: XY trajectory</text>
+<line x1="160" y1="500" x2="860" y2="500" class="axis"/><line x1="160" y1="100" x2="160" y2="500" class="axis"/>
+<line x1="160" y1="300" x2="860" y2="300" class="grid"/><line x1="510" y1="100" x2="510" y2="500" class="grid"/>
+<ellipse cx="510" cy="300" rx="230" ry="150" class="ref"/>
+<path class="traj" d="M740 300 C720 410,620 480,500 455 C380 430,280 360,290 280 C300 190,410 135,525 150 C650 165,735 220,740 300"/>
+<circle cx="740" cy="300" r="7" fill="#2563eb"/><circle cx="500" cy="455" r="7" fill="#2563eb"/><circle cx="290" cy="280" r="7" fill="#2563eb"/>
+<text x="510" y="545" text-anchor="middle" class="label">x [m]</text><text x="90" y="300" text-anchor="middle" class="label" transform="rotate(-90 90 300)">y [m]</text>
+<line x1="705" y1="115" x2="765" y2="115" class="ref"/><text x="780" y="122" class="label">reference</text>
+<line x1="705" y1="150" x2="765" y2="150" class="traj"/><text x="780" y="157" class="label">executed</text>
+</svg>

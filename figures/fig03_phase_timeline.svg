@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540">
+<style>
+text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}
+.title{font-size:34px;font-weight:700;fill:#1e40af}
+.label{font-size:22px;fill:#334155}
+.axis{stroke:#64748b;stroke-width:2}
+.grid{stroke:#e2e8f0;stroke-width:1}
+.ref{fill:none;stroke:#2563eb;stroke-width:4}
+.trans{fill:#bfdbfe;opacity:.65}
+.step{fill:#fde68a;opacity:.65}
+</style>
+<text x="640" y="55" text-anchor="middle" class="title">Example online phase timeline</text>
+<rect x="185" y="130" width="130" height="260" class="trans"/><rect x="630" y="130" width="160" height="260" class="step"/><rect x="935" y="130" width="120" height="260" class="trans"/>
+<line x1="120" y1="390" x2="1160" y2="390" class="axis"/><line x1="120" y1="130" x2="120" y2="390" class="axis"/>
+<line x1="120" y1="260" x2="1160" y2="260" class="grid"/>
+<path d="M120 260 C220 100,320 100,420 260 S620 420,720 260 S920 100,1020 260 S1120 420,1160 330" class="ref"/>
+<text x="640" y="430" text-anchor="middle" class="label">time</text><text x="72" y="260" text-anchor="middle" class="label" transform="rotate(-90 72 260)">normalized reference</text>
+<rect x="870" y="80" width="28" height="22" class="trans"/><text x="910" y="99" class="label">transition</text>
+<rect x="870" y="118" width="28" height="22" class="step"/><text x="910" y="137" class="label">step-like</text>
+<line x1="870" y1="160" x2="898" y2="160" class="ref"/><text x="910" y="168" class="label">reference trend</text>
+</svg>

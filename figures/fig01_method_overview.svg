@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540">
+<style>
+text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#0f172a}
+.title{font-size:34px;font-weight:700;fill:#1e40af}
+.box-title{font-size:24px;font-weight:700;fill:#1e40af}
+.body{font-size:19px;fill:#475569}
+.box{fill:white;stroke:#bfdbfe;stroke-width:2}
+.soft{fill:#eff6ff}
+.arrow{stroke:#2563eb;stroke-width:4;marker-end:url(#a)}
+</style>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker></defs>
+<text x="640" y="58" text-anchor="middle" class="title">Maneuver-aware DeePC pipeline for quadrotor tracking</text>
+<rect x="80" y="150" width="220" height="120" rx="18" class="box soft"/><text x="190" y="195" text-anchor="middle" class="box-title">Reference + odometry</text><text x="190" y="232" text-anchor="middle" class="body">r_k, y_k, e_k</text>
+<line x1="310" y1="210" x2="395" y2="210" class="arrow"/>
+<rect x="410" y="150" width="220" height="120" rx="18" class="box"/><text x="520" y="195" text-anchor="middle" class="box-title">Phase detector</text><text x="520" y="232" text-anchor="middle" class="body">smooth / transition / step-like</text>
+<line x1="640" y1="210" x2="725" y2="210" class="arrow"/>
+<rect x="740" y="150" width="250" height="120" rx="18" class="box soft"/><text x="865" y="195" text-anchor="middle" class="box-title">Phase-conditioned DeePC</text><text x="865" y="232" text-anchor="middle" class="body">select lambda_g, lambda_y</text>
+<line x1="1000" y1="210" x2="1080" y2="210" class="arrow"/>
+<rect x="1095" y="150" width="120" height="120" rx="18" class="box"/><text x="1155" y="195" text-anchor="middle" class="box-title">Command</text><text x="1155" y="232" text-anchor="middle" class="body">u_k</text>
+<rect x="410" y="345" width="250" height="120" rx="18" class="box soft"/><text x="535" y="390" text-anchor="middle" class="box-title">UAV constraints</text><text x="535" y="425" text-anchor="middle" class="body">hover-centered input</text><text x="535" y="451" text-anchor="middle" class="body">flight envelope</text>
+<line x1="620" y1="345" x2="760" y2="270" class="arrow"/>
+</svg>
