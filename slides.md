@@ -220,9 +220,8 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 6. 方法图
 
-![width:920px](figures/fig01_method_overview.png)
+![width:2560px](figures/fig01_method_overview.svg)
 
 ---
 
