@@ -444,21 +444,21 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. Gazebo Box：Static vs Maneuver-Aware
+# 16. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
 
 **XY 轨迹叠加对比**
 
-![width:460px](figures/gazebo_box_static_vs_aware_xy.png)
+![width:460px](figures/gazebo_circle_box_causal_static_vs_aware_xy.png)
 
 </div>
 <div>
 
 **误差曲线叠加对比**
 
-![width:460px](figures/gazebo_box_static_vs_aware_error.png)
+![width:460px](figures/gazebo_circle_box_causal_static_vs_aware_error.png)
 
 </div>
 </div>
