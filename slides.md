@@ -40,6 +40,28 @@ strong { color: #1e40af; }
 .eq.small-eq { font-size: 24px; margin: 8px 0; }
 .ref { font-size: 16px; color: #64748b; margin-top: 10px; }
 img { max-width: 100%; max-height: 430px; object-fit: contain; }
+section.method-overview {
+  padding: 4px 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+section.method-overview::before { display: none; }
+section.method-overview p {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+section.method-overview img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill;
+}
 </style>
 
 <!-- _class: title -->
@@ -219,7 +241,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 
 ---
-
+<!-- _class: method-overview -->
 
 ![width:2560px](figures/fig01_method_overview.svg)
 
