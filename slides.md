@@ -512,7 +512,7 @@ Point-LIO / Super Planner / MPC / MAVROS / PX4
 </div>
 <div>
 
-这里添加图片
+<img src="figures/playground.png" style="width:100%; max-height:360px; object-fit:contain;">
 
 </div>
 </div>
@@ -531,7 +531,16 @@ Point-LIO / Super Planner / MPC / MAVROS / PX4
 - 规划器：Super Planner：轨迹规划
 - 控制器：MPC：轨迹跟踪控制
 
-放 无人机1.jpg 无人机2.jpg 两张图
+</div>
+<div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center;">
+<img src="figures/无人机1.jpg" style="width:100%; max-height:300px; object-fit:contain;">
+<img src="figures/无人机2.jpg" style="width:100%; max-height:300px; object-fit:contain;">
+</div>
+
+</div>
+</div>
 
 ---
 
@@ -590,4 +599,3 @@ RANSAC 拟合方框<br>
 ↓<br>
 Planner 目标点
 </div>
-
