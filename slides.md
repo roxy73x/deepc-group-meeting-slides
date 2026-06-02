@@ -356,9 +356,9 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 12. Gazebo 模型的特殊性
+# 12. 移植到 Gazebo
 
-Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
+将前面的 DeePC 方案移植到 Gazebo 后，quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
 
 <div class="cols">
 <div>
@@ -589,7 +589,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 # 21. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
-- 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
+- 更合适的表述是：**面向多机动阶段的 phase-aware DeePC**
 - 自写简化仿真中，A2 在 step 和 figure8 上稳定优于 static DeePC
 - Gazebo 中 best branch 相对更好，但所有分支都尚未成功收敛，系统验证仍是当前主要难点
 
