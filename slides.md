@@ -66,14 +66,9 @@ section.method-overview img {
 
 <!-- _class: title -->
 
-# Phase-aware DeePC for Quadcopter Tracking
+# Maneuver-aware DeePC for Quadcopter Tracking
 
-面向多机动轨迹的无人机数据驱动预测控制  
-**选题、实验进展与关键难点**
-
-<div class="small" style="margin-top:60px;">
-组会汇报 · DeePC / UAV Tracking / Gazebo Validation
-</div>
+面向无人机的机动感知数据驱动预测控制  
 
 ---
 
@@ -128,7 +123,7 @@ Select-DeePC 关注的是非线性系统中的 DeePC 控制问题。如果一直
 该工作来自 DeePC 原作者 Florian Dörfler。
 </div>
 
-本文先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。具体实现不是直接删除不相关列，而是把原来的 g 正则化项改成带列权重的形式：
+本文先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。具体实现是把原来的 g 正则化项改成带列权重的形式：
 
 <div class="eq small-eq">
 λ<sub>g</sub> ||g||<sub>2</sub><sup>2</sup> → λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup> = λ<sub>g</sub> Σ<sub>i</sub> w<sub>i</sub>g<sub>i</sub><sup>2</sup>
@@ -308,7 +303,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 11. Gazebo-shape 简化仿真：四方法结论表
+# 11. 实验结果数据表
 
 <table class="tbl compact">
 <tr>
@@ -354,17 +349,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 将前面的 DeePC 方案移植到 Gazebo 后，quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
 
-<div class="cols">
-<div>
 
 
-- Gazebo存在电机/推力响应、饱和和姿态耦合，且轨迹误差会被低层控制器和模型延迟放
-- 数据采集和执行不是同一个理想离散系统，控制命令需要经过 ROS/Gazebo 的执行链路，中间套了一层控制器
+- 数据采集和执行不是同一个理想离散系统，控制命令需要经过 ROS/Gazebo 的执行链路，中间套了一层控制器（做了单独的数据采集，中间做了专门的adaptor来对齐输入输出）
 - 简化仿真中的参数不一定能直接迁移到 Gazebo
-- Gazebo仿真要求实时控制，但是实时计算频率最高只能到5Hz左右
+- Gazebo仿真要求实时控制，但是实时计算频率最高只能到5Hz左右 （通过控制 Gazebo 的 /clock 话题实现对仿真固定频率）
 
-</div>
-</div>
+
 
 
 ---
@@ -512,7 +503,7 @@ Point-LIO / Super Planner / MPC / MAVROS / PX4
 </div>
 <div>
 
-<img src="figures/playground.png" style="width:100%; max-height:360px; object-fit:contain;">
+<img src="figures/playground.png" style="width:100%; max-height:960px; object-fit:contain;">
 
 </div>
 </div>
@@ -535,8 +526,8 @@ Point-LIO / Super Planner / MPC / MAVROS / PX4
 <div>
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center;">
-<img src="figures/无人机1.jpg" style="width:100%; max-height:300px; object-fit:contain;">
-<img src="figures/无人机2.jpg" style="width:100%; max-height:300px; object-fit:contain;">
+<img src="figures/无人机1.jpg" style="width:100%; max-height:150px; object-fit:contain;">
+
 </div>
 
 </div>
