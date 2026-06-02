@@ -442,7 +442,148 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 15. 当前 Gazebo 结论
+# 15. Gazebo 正面例子：平滑轨迹上可以稳定收敛
+
+<div class="cols">
+<div>
+
+**Easy circle**
+
+![width:460px](figures/gazebo_circle_easy_full_xy.png)
+
+</div>
+<div>
+
+**Easy lemniscate**
+
+![width:460px](figures/gazebo_lemniscate_easy_full_xy.png)
+
+</div>
+</div>
+
+<table class="tbl compact" style="margin-top:16px;">
+<tr>
+<th>Trajectory</th>
+<th>Status</th>
+<th>RMSE (m)</th>
+<th>Mean solve (ms)</th>
+<th>Large XY excursion</th>
+</tr>
+<tr>
+<td>circle_easy_full</td>
+<td class="good">complete</td>
+<td>0.4918</td>
+<td>18.0</td>
+<td>never crossed xy&gt;1.0</td>
+</tr>
+<tr>
+<td>lemniscate_easy_full</td>
+<td class="good">complete</td>
+<td>0.4352</td>
+<td>20.7</td>
+<td>never crossed xy&gt;1.0</td>
+</tr>
+</table>
+
+<div class="note">
+这两页的意义是：Gazebo 并不是“完全跑不起来”。在几何更平滑、激励更连续的轨迹上，当前控制链路已经能给出稳定收敛结果。
+</div>
+
+---
+
+# 16. Gazebo 几何难度梯度：越接近 setpoint-jump，越容易退化
+
+<table class="tbl compact">
+<tr>
+<th>Trajectory family</th>
+<th>Representative run</th>
+<th>Status</th>
+<th>RMSE (m)</th>
+<th>Step-like 占比</th>
+<th>读法</th>
+</tr>
+<tr>
+<td>smooth easy</td>
+<td>circle_easy_full</td>
+<td class="good">complete</td>
+<td>0.49</td>
+<td>low</td>
+<td>已稳定收敛</td>
+</tr>
+<tr>
+<td>smooth easy</td>
+<td>lemniscate_easy_full</td>
+<td class="good">complete</td>
+<td>0.44</td>
+<td>low</td>
+<td>已稳定收敛</td>
+</tr>
+<tr>
+<td>mixed geometry</td>
+<td>circle_box (matched h40)</td>
+<td class="good">complete</td>
+<td>5.09</td>
+<td>0.0%</td>
+<td>可完成，但误差明显上升</td>
+</tr>
+<tr>
+<td>mixed geometry</td>
+<td>half_circle_box (matched h40)</td>
+<td class="good">complete</td>
+<td>6.47</td>
+<td>11.6%</td>
+<td>继续退化，开始出现明显 step-like</td>
+</tr>
+<tr>
+<td>aggressive corners</td>
+<td>D-shape (matched h40)</td>
+<td class="good">complete</td>
+<td class="bad">15.39</td>
+<td class="bad">87.8%</td>
+<td>几何跳变主导，当前方案不足</td>
+</tr>
+</table>
+
+<div class="note warn">
+这里真正体现出的“优势”不是所有轨迹都更好，而是：**当参考几何保持平滑时，Gazebo 链路已经能稳定收敛；当轨迹包含更强 setpoint-jump / sharp-corner 成分时，误差迅速放大。**
+</div>
+
+---
+
+# 17. 不同轨迹揭示的方法边界
+
+<div class="cols">
+<div>
+
+**Smooth trajectory: current strength**
+
+![width:440px](figures/gazebo_circle_easy_full_xy.png)
+
+<div class="box bluebox small">
+circle / lemniscate 说明当前 DeePC + Gazebo 链路在平滑轨迹上已具备 closeout 价值：误差低、求解时间稳定、没有大幅漂移。
+</div>
+
+</div>
+<div>
+
+**Sharp-corner trajectory: current weakness**
+
+![width:440px](figures/gazebo_d_shape_matched_xy.png)
+
+<div class="box small">
+D-shape 暴露的是另一类问题：phase-aware regularization 本身还不够，数据覆盖、参考生成方式、以及跳变后的恢复能力都会同时成为瓶颈。
+</div>
+
+</div>
+</div>
+
+<div class="note">
+因此，更合理的组会表述应是：方法对“平滑多机动轨迹”已经显示出可行性，但对“由 setpoint-jump 驱动的尖角几何”还没有形成稳定优势。
+</div>
+
+---
+
+# 18. 当前 Gazebo 结论
 
 当前 Gazebo 结果的结论要谨慎表述：
 
@@ -456,7 +597,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. 下一步计划
+# 19. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
@@ -466,7 +607,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 17. 总结
+# 20. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
