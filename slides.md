@@ -491,62 +491,53 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. Gazebo 几何难度梯度：越接近 setpoint-jump，越容易退化
+# 16. 更复杂轨迹上的对比图：Circle-Box vs D-Shape
 
-<table class="tbl compact">
+<div class="cols">
+<div>
+
+**Circle-Box**
+
+![width:440px](figures/gazebo_circle_box_maneuver_aware_xy.png)
+
+<div class="box small">
+matched probe 中 maneuver-aware 分支可以跑完整条轨迹，但 XY RMSE 仍达到 <strong>8.99 m</strong>，已经明显高于 easy circle / lemniscate。
+</div>
+
+</div>
+<div>
+
+**D-Shape**
+
+![width:440px](figures/gazebo_d_shape_matched_xy.png)
+
+<div class="box small">
+D-shape 几何包含更强的转折和 setpoint-jump 成分，matched h40 结果进一步恶化到 <strong>15.95 m XY RMSE</strong>，轨迹明显发散。
+</div>
+
+</div>
+</div>
+
+<table class="tbl compact" style="margin-top:14px;">
 <tr>
-<th>Trajectory family</th>
-<th>Representative run</th>
+<th>Trajectory</th>
 <th>Status</th>
-<th>RMSE (m)</th>
-<th>Step-like 占比</th>
-<th>读法</th>
+<th>XY RMSE (m)</th>
+<th>Max XY error (m)</th>
 </tr>
 <tr>
-<td>smooth easy</td>
-<td>circle_easy_full</td>
+<td>circle_box maneuver-aware</td>
 <td class="good">complete</td>
-<td>0.49</td>
-<td>low</td>
-<td>已稳定收敛</td>
+<td>8.99</td>
+<td>14.39</td>
 </tr>
 <tr>
-<td>smooth easy</td>
-<td>lemniscate_easy_full</td>
+<td>d_shape matched h40</td>
 <td class="good">complete</td>
-<td>0.44</td>
-<td>low</td>
-<td>已稳定收敛</td>
-</tr>
-<tr>
-<td>mixed geometry</td>
-<td>circle_box (matched h40)</td>
-<td class="good">complete</td>
-<td>5.09</td>
-<td>0.0%</td>
-<td>可完成，但误差明显上升</td>
-</tr>
-<tr>
-<td>mixed geometry</td>
-<td>half_circle_box (matched h40)</td>
-<td class="good">complete</td>
-<td>6.47</td>
-<td>11.6%</td>
-<td>继续退化，开始出现明显 step-like</td>
-</tr>
-<tr>
-<td>aggressive corners</td>
-<td>D-shape (matched h40)</td>
-<td class="good">complete</td>
-<td class="bad">15.39</td>
-<td class="bad">87.8%</td>
-<td>几何跳变主导，当前方案不足</td>
+<td class="bad">15.95</td>
+<td class="bad">18.03</td>
 </tr>
 </table>
-
-<div class="note warn">
-这里真正体现出的“优势”不是所有轨迹都更好，而是：**当参考几何保持平滑时，Gazebo 链路已经能稳定收敛；当轨迹包含更强 setpoint-jump / sharp-corner 成分时，误差迅速放大。**
-</div>
 
 ---
 
