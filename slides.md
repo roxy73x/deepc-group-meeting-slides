@@ -37,7 +37,7 @@ strong { color: #1e40af; }
 .good { color: #16a34a; font-weight: 700; }
 .bad { color: #dc2626; font-weight: 700; }
 .eq { font-family: "Times New Roman", "Cambria Math", serif; font-size: 34px; text-align: center; color: #1e40af; margin: 18px 0; }
-.eq.small-eq { font-size: 27px; margin: 10px 0; }
+.eq.small-eq { font-size: 24px; margin: 8px 0; }
 .ref { font-size: 16px; color: #64748b; margin-top: 10px; }
 img { max-width: 100%; max-height: 430px; object-fit: contain; }
 </style>
@@ -112,7 +112,7 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 - 核心思想：每个时刻只使用与当前任务更相关的数据
 - 面向非线性系统，避免固定全局 Hankel 数据集带来的冗余和失配
 
-**本文没有照搬其算法**，而是采用更简单的 support-based heuristic。
+**本文没有照搬其算法**，而是采用“基于参考投影系数的局部数据选择”。这里的 support 指某列数据对当前参考重构的贡献度。
 
 </div>
 <div>
@@ -122,19 +122,19 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 先用当前参考构造一个参考一致的 DeePC 系数：
 
 <div class="eq small-eq">
-g_r = H^† [u_{ini}; y_{ini}; u_{ref}; y_{ref}]
+\( g_r = H^{\dagger}\begin{bmatrix}u_{\mathrm{ini}} \\ y_{\mathrm{ini}} \\ u_{\mathrm{ref}} \\ y_{\mathrm{ref}}\end{bmatrix} \)
 </div>
 
 用系数幅值作为 Hankel 列相关性评分：
 
 <div class="eq small-eq">
-s_i = |g_{r,i}|, \quad I_k = TopK_i(s_i)
+\( s_i = |(g_r)_i|, \quad I_k = \operatorname{TopK}_i(s_i) \)
 </div>
 
 在 DeePC 中降低被选列的 g 正则化惩罚：
 
 <div class="eq small-eq">
-λ_g ||W_k^{1/2} g||^2, \quad w_i = 1 \; (i∈I_k), \; w_i=w_{off} \; (i∉I_k)
+\( \lambda_g \lVert W_k^{1/2}g \rVert_2^2, \quad w_i=1\;(i\in I_k),\; w_i=w_{\mathrm{off}}\;(i\notin I_k) \)
 </div>
 
 </div>
