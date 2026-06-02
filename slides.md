@@ -444,7 +444,53 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
+# 16. Gazebo Circle-Easy 方法消融
+
+<div class="cols">
+<div>
+
+![width:500px](figures/gazebo_circle_easy_ablation_overlay_xy.png)
+
+</div>
+<div>
+
+<table class="tbl compact">
+<tr>
+<th>Variant</th>
+<th>XY RMSE (m)</th>
+<th>Max XY error (m)</th>
+<th>Solver ms</th>
+</tr>
+<tr>
+<td>Static DeePC</td>
+<td>0.77166</td>
+<td>3.000</td>
+<td>28.334</td>
+</tr>
+<tr>
+<td>Local-data only</td>
+<td class="good">0.40831</td>
+<td class="good">0.994</td>
+<td>16.176</td>
+</tr>
+<tr>
+<td>Full Maneuver-Aware</td>
+<td>0.71303</td>
+<td>2.604</td>
+<td class="good">15.145</td>
+</tr>
+</table>
+
+<div class="note">
+这组消融说明：当前 Gazebo circle 上收益主要来自 local-data selection；完整 maneuver-aware bundle 没有稳定成为最优。
+</div>
+
+</div>
+</div>
+
+---
+
+# 17. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -465,7 +511,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 17. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
+# 18. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
 
 <div class="cols">
 <div>
@@ -511,7 +557,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 18. 当前 Gazebo 结论
+# 19. 当前 Gazebo 结论
 
 当前 Gazebo 结果的结论要谨慎表述：
 
@@ -525,7 +571,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 19. 下一步计划
+# 20. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
@@ -535,7 +581,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 20. 总结
+# 21. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
