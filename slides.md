@@ -23,6 +23,7 @@ li { margin: 8px 0; }
 strong { color: #1e40af; }
 .small { font-size: 20px; color: #64748b; }
 .note { border-left: 6px solid #2563eb; background: #eff6ff; padding: 14px 18px; border-radius: 8px; margin-top: 18px; color: #334155; }
+.warn { border-left-color: #f59e0b; background: #fffbeb; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
 .box { border: 1px solid #dbeafe; border-radius: 14px; padding: 18px 20px; background: #ffffff; }
@@ -33,6 +34,7 @@ strong { color: #1e40af; }
 .tbl th, .tbl td { border: 1px solid #bfdbfe; padding: 11px 12px; text-align: center; vertical-align: middle; }
 .tbl.compact th, .tbl.compact td { padding: 8px 9px; }
 .good { color: #16a34a; font-weight: 700; }
+.bad { color: #dc2626; font-weight: 700; }
 .eq { font-family: "Times New Roman", "Cambria Math", serif; font-size: 34px; text-align: center; color: #1e40af; margin: 18px 0; }
 .ref { font-size: 16px; color: #64748b; margin-top: 10px; }
 img { max-width: 100%; max-height: 430px; object-fit: contain; }
@@ -307,219 +309,112 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 10. 已有实验设置
+# 10. 自写简化仿真环境与多 seed 结果
 
-实验采用最终协议 A：
+当前主结果来自**自写的轻量级 Python 仿真环境**，不是 Gazebo：
 
 <div class="cols">
 <div>
 
-**轨迹任务**
+**仿真环境**
 
-- step
-- figure8
-
-**随机种子**
-
-- 41–50，共 10 个 seed
+- 用于快速验证 DeePC 参数切换是否有效
+- 轨迹任务：step、figure8
+- 控制器：A1 Static DeePC vs A2 Maneuver-aware DeePC
+- 随机种子：41–50，共 10 个 seed
 
 </div>
 <div>
 
-**A1: Static DeePC**
+**设置说明**
 
-- 固定 λ<sub>g</sub>=30
-- 固定 λ<sub>y</sub>=1e4
-
-**A2: Maneuver-aware DeePC**
-
-- smooth: 30 / 1e4
-- transition: 20 / 1.2e4
-- step-like: 12 / 1e4
+- A1：固定 λ<sub>g</sub>=30, λ<sub>y</sub>=1e4
+- A2：按 smooth / transition / step-like 切换参数
+- 目的：验证 phase-conditioned regularization 是否带来稳定收益
+- 限制：该环境比 Gazebo 简化，不能代表最终实机/高保真仿真效果
 
 </div>
 </div>
 
----
-
-# 11. 多 seed 结果
-
-<table class="tbl">
-<tr>
-<th>Trajectory</th>
-<th>Static Position RMSE</th>
-<th>Maneuver-aware Position RMSE</th>
-<th>Paired Result</th>
-</tr>
-<tr>
-<td><strong>figure8</strong></td>
-<td>0.0868 ± 0.0096</td>
-<td class="good">0.0647 ± 0.0067</td>
-<td class="good">10 / 10 wins</td>
-</tr>
-<tr>
-<td><strong>step</strong></td>
-<td>0.1364 ± 0.0234</td>
-<td class="good">0.1046 ± 0.0133</td>
-<td class="good">10 / 10 wins</td>
-</tr>
+<table class="tbl compact" style="margin-top:18px;">
+<tr><th>Trajectory</th><th>Static Position RMSE</th><th>Maneuver-aware Position RMSE</th><th>Paired Result</th></tr>
+<tr><td><strong>figure8</strong></td><td>0.0868 ± 0.0096</td><td class="good">0.0647 ± 0.0067</td><td class="good">10 / 10 wins</td></tr>
+<tr><td><strong>step</strong></td><td>0.1364 ± 0.0234</td><td class="good">0.1046 ± 0.0133</td><td class="good">10 / 10 wins</td></tr>
 </table>
 
 ---
 
-# 12. 主结果图
+# 11. 主结果图
 
 ![width:920px](figures/fig02_main_results.png)
 
 ---
 
-# 13. Phase timeline 图
+# 12. Gazebo 模型的特殊性
 
-![width:920px](figures/fig03_phase_timeline.png)
+Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
 
-<div class="small">
-用途：说明 online phase switching 是实际控制过程中的切换，不是事后重新标注。
+<div class="cols">
+<div>
+
+**模型与执行链路更复杂**
+
+- 四旋翼刚体动力学更接近真实系统
+- 存在电机/推力响应、饱和和姿态耦合
+- 控制命令需要经过 ROS/Gazebo 的执行链路
+- 轨迹误差会被低层控制器和模型延迟放大
+
+</div>
+<div>
+
+**DeePC 数据假设更难满足**
+
+- 数据采集和执行不是同一个理想离散系统
+- /clock、控制频率和 reference index 对齐会影响历史数据
+- 在线记录的 u/y 如果因果错位，会破坏 Hankel 数据一致性
+- 简化仿真中的参数不一定能直接迁移到 Gazebo
+
+</div>
+</div>
+
+<div class="note warn">
+因此，Gazebo 不是简单复现实验结果的环境，而是当前项目中暴露系统难点的主要位置。
 </div>
 
 ---
 
-# 14. 结果如何解释
+# 13. 当前 Gazebo 结果与问题
 
-当前结果支持的结论：
+![width:760px](figures/gazebo_support384_off4_time_colored_xy.png)
 
-- 固定参数 DeePC 在不同轨迹类型之间存在折中
-- phase-conditioned regularization 能在 step 和 figure8 上稳定降低 RMSE
-- 这说明“相位感知”方向有继续做的价值
-
-当前结果还不能直接说明：
-
-- local data selection 一定有效
-- phase detector 已经足够可迁移
-- Gazebo / ROS 中能保持同样收益
-
-<div class="note">
-后续重点不是继续盲目加轨迹，而是把机制解释和验证链路补完整。
+<div class="note warn">
+当前 Gazebo 结果的结论要谨慎表述：maneuver-aware DeePC 的轨迹表现好于 static baseline，但两者都没有真正收敛；目前还没有找到一组能够在 Gazebo 中稳定成功收敛的参数和数据配置。
 </div>
+
+这说明目前存在两个层面的工作：
+
+- **方法层面**：简化仿真已经显示 phase-aware regularization 有收益
+- **系统层面**：Gazebo 中仍需解决模型差异、输入约束、数据激励、时间同步和因果记录问题
 
 ---
 
-# 15. 需要补的评价指标
+# 14. 下一步计划
 
-<div class="cols3">
-<div class="box">
-<h3>整体指标</h3>
-<ul>
-<li>Tracking RMSE</li>
-<li>Position RMSE</li>
-<li>Max error</li>
-</ul>
-</div>
-<div class="box bluebox">
-<h3>分阶段指标</h3>
-<ul>
-<li>Smooth RMSE</li>
-<li>Transition RMSE</li>
-<li>Step-like RMSE</li>
-</ul>
-</div>
-<div class="box">
-<h3>求解指标</h3>
-<ul>
-<li>Mean solve time</li>
-<li>Max solve time</li>
-<li>Failure count</li>
-</ul>
-</div>
-</div>
-
-<div class="note">
-如果提升主要来自 transition 或 step-like 阶段，才能更有力地支撑 phase-aware 的研究动机。
-</div>
+1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
+2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
+3. 检查数据采集中的 excitation 强度和 phase coverage
+4. 在 Gazebo 中重点处理时间同步、输入约束、u/y 因果对齐
+5. 将 Gazebo 目标从“直接收敛”拆成 smoke test → tracking improvement → stable convergence
 
 ---
 
-# 16. 难点一：相位定义不能太启发式
-
-相位标签需要满足：
-
-1. **可解释**：能对应轨迹几何或控制困难
-2. **可复现**：不同 seed 和不同轨迹下定义一致
-3. **可在线获得**：不能依赖未来信息或离线标签
-
-<div class="eq">
-φ<sub>k</sub> = f( ||r<sub>k</sub> − r<sub>k−1</sub>||, ||r<sub>k</sub> − 2r<sub>k−1</sub> + r<sub>k−2</sub>||, ||e<sub>k</sub>|| )
-</div>
-
----
-
-# 17. 难点二：数据越干净不一定越好
-
-DeePC 依赖数据字典覆盖系统行为。采集数据时存在一个矛盾：
-
-- excitation 太强：轨迹看起来脏，可能污染数据
-- excitation 太弱：数据缺少充分激励，后续优化容易不可行
-
-<div class="eq">
-data quality &nbsp; vs. &nbsp; persistence of excitation
-</div>
-
-已有现象：去掉 excitation 后，采集轨迹更干净，但后续 DeePC 执行明显变差，甚至出现 infeasible。
-
----
-
-# 18. 难点三：horizon 和数据集匹配
-
-预测时域 N 不是单调调参旋钮。
-
-- N 太短：预测能力不足
-- N 太长：优化规模增大，数值问题和数据不匹配更明显
-- 不同任务对 N 的需求不同
-
-<div class="eq">
-N<sub>dataset</sub> = N<sub>controller</sub>
-</div>
-
----
-
-# 19. 难点四：Gazebo / ROS 验证
-
-Gazebo 验证的目标不是刷主结果，而是说明方法能进入更真实的控制链路。
-
-需要注意：
-
-- 使用 /clock，不能用 wall-clock 驱动控制步
-- 参考轨迹索引要避免浮点 floor jitter
-- 在线历史数据要满足因果关系
-
-<div class="eq">
-history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<sub>k</sub>)
-</div>
-
----
-
-# 20. Gazebo 轨迹预览
-
-![width:860px](figures/gazebo_support384_off4_time_colored_xy.png)
-
----
-
-# 21. 下一步计划
-
-1. 固定公平 baseline，避免 static DeePC 太弱
-2. 补充 phase-resolved RMSE 和 phase occupancy
-3. 完成 A1 / A2 / A4 / A5 消融
-4. 检查数据采集中的 excitation 强度
-5. 做 Gazebo closeout：时间同步、因果记录、控制频率
-
----
-
-# 22. 总结
+# 15. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
-- 已有结果显示 A2 在 step 和 figure8 上稳定优于 static DeePC
-- 后续关键是解释收益来源，并保证 Gazebo 验证不被时间和数据问题干扰
+- 自写简化仿真中，A2 在 step 和 figure8 上稳定优于 static DeePC
+- 但 Gazebo 中两种方法都尚未成功收敛，说明系统验证仍是当前主要难点
 
 <div class="note">
-希望讨论：后续优先补 A4/A5 消融，还是先完成 Gazebo closeout？
+希望讨论：下一步应优先补简化仿真的消融实验，还是集中解决 Gazebo 中的收敛问题？
 </div>
