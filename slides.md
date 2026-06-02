@@ -244,28 +244,25 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 7. 自写简化仿真环境与多 seed 结果
+# 7. 仿真环境多 seed 结果
 
-用轻量 Python 仿真环境做仿真，结果如下：
+用轻量 Python 仿真环境做仿真：
 
 <div class="cols">
 <div>
 
 **仿真环境**
-
-- 轨迹任务：step、figure8
+- 使用 data-driven-mpc 工程提供的 python 仿真模型进行仿真，之后移植到 gazebo 验证
 - 控制器：A1 Static DeePC vs A2 Maneuver-aware DeePC
-- 随机种子：41–50，共 10 个 seed
+- 使用MPC控制器做轨迹数据采集
 
 </div>
 <div>
 
 **设置说明**
 
-- A1：固定 λ<sub>g</sub>=30, λ<sub>y</sub>=1e4
-- A2：按 smooth / transition / step-like 切换参数
+- 按 smooth / transition / step-like 切换参数
 - 目的：验证 phase-conditioned regularization 是否带来稳定收益
-- 限制：该环境比 Gazebo 简化，不能代表最终实机/高保真仿真效果
 
 </div>
 </div>
@@ -308,9 +305,6 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 </div>
 
-<div class="note">
-这两条轨迹几乎全处于 <code>transition</code>。结果同样显示：<strong>local-data only</strong> 不能单独带来收益，<strong>full maneuver-aware</strong> 也没有超过 <strong>bundles-only</strong>。
-</div>
 
 ---
 
@@ -363,47 +357,15 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 <div class="cols">
 <div>
 
-**模型与执行链路更复杂**
 
-- 四旋翼刚体动力学更接近真实系统
-- 存在电机/推力响应、饱和和姿态耦合
-- 控制命令需要经过 ROS/Gazebo 的执行链路
-- 轨迹误差会被低层控制器和模型延迟放大
-
-</div>
-<div>
-
-**DeePC 数据假设更难满足**
-
-- 数据采集和执行不是同一个理想离散系统
-- /clock、控制频率和 reference index 对齐会影响历史数据
-- 在线记录的 u/y 如果因果错位，会破坏 Hankel 数据一致性
+- Gazebo存在电机/推力响应、饱和和姿态耦合，且轨迹误差会被低层控制器和模型延迟放
+- 数据采集和执行不是同一个理想离散系统，控制命令需要经过 ROS/Gazebo 的执行链路，中间套了一层控制器
 - 简化仿真中的参数不一定能直接迁移到 Gazebo
+- Gazebo仿真要求实时控制，但是实时计算频率最高只能到5Hz左右
 
 </div>
 </div>
 
-<div class="note warn">
-因此，Gazebo 不是简单复现实验结果的环境，而是当前项目中暴露系统难点的主要位置。
-</div>
-
----
-
-# 13. Gazebo 分支对比：量化结果
-
-目前仓库中只有 best branch 的轨迹图，因此这里先用分支表说明对比关系：
-
-<table class="tbl compact">
-<tr><th>Branch</th><th>Completed</th><th>RMSE / m</th><th>Solver / ms</th><th>说明</th></tr>
-<tr><td><strong>support384/off4</strong></td><td>yes</td><td class="good">2.0307</td><td>97.9</td><td>当前 best branch</td></tr>
-<tr><td>support512/off4</td><td>yes</td><td>2.8865</td><td>31.8</td><td>同类 local selection，对比更大支持集</td></tr>
-<tr><td>no local selection</td><td>yes</td><td>3.4126</td><td>163.7</td><td>无局部数据选择，对比数据支持策略</td></tr>
-<tr><td>Q<sub>z</sub>=2.0 baseline</td><td>yes</td><td>3.7575</td><td>77.3</td><td>较弱 z 权重 baseline</td></tr>
-</table>
-
-<div class="note warn">
-这张表能说明 best branch 优于几个 Gazebo 分支，但不能替代轨迹图对比。当前仍应表述为：Gazebo 中 best branch 相对更好，但整体仍未收敛。
-</div>
 
 ---
 
@@ -422,27 +384,6 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 **误差曲线叠加对比**
 
 ![width:460px](figures/gazebo_circle_box_static_vs_aware_error.png)
-
-</div>
-</div>
-
----
-
-# 15. Gazebo Circle-Easy：Static vs Maneuver-Aware
-
-<div class="cols">
-<div>
-
-**XY 轨迹叠加对比**
-
-![width:460px](figures/gazebo_circle_easy_static_vs_aware_xy.png)
-
-</div>
-<div>
-
-**误差曲线叠加对比**
-
-![width:460px](figures/gazebo_circle_easy_static_vs_aware_error.png)
 
 </div>
 </div>
@@ -495,27 +436,6 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 17. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
-
-<div class="cols">
-<div>
-
-**XY 轨迹叠加对比**
-
-![width:460px](figures/gazebo_circle_box_causal_static_vs_aware_xy.png)
-
-</div>
-<div>
-
-**误差曲线叠加对比**
-
-![width:460px](figures/gazebo_circle_box_causal_static_vs_aware_error.png)
-
-</div>
-</div>
-
----
-
 # 18. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
 
 <div class="cols">
@@ -560,39 +480,3 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 </div>
 
----
-
-# 19. 当前 Gazebo 结论
-
-当前 Gazebo 结果的结论要谨慎表述：
-
-- best branch 的 RMSE 低于几个 Gazebo 分支，包括 no-local-selection 和 Q<sub>z</sub>=2.0 baseline
-- 但是所有分支都没有真正收敛，best branch 也存在后段漂移
-- 目前还没有找到一组能够在 Gazebo 中稳定成功收敛的参数和数据配置
-
-<div class="note warn">
-因此，Gazebo 部分目前不是“成功验证方法”，而是说明高保真链路中仍存在模型差异、输入约束、数据激励、时间同步和因果记录问题。
-</div>
-
----
-
-# 20. 下一步计划
-
-1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
-2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
-3. 检查数据采集中的 excitation 强度和 phase coverage
-4. 补齐 Gazebo 的 baseline / best branch 对比图和误差曲线
-5. 将 Gazebo 目标从“直接收敛”拆成 smoke test → tracking improvement → stable convergence
-
----
-
-# 21. 总结
-
-- 当前项目不应表述为“复现 DeePC 无人机控制器”
-- 更合适的表述是：**面向多机动阶段的 phase-aware DeePC**
-- 自写简化仿真中，A2 在 step 和 figure8 上稳定优于 static DeePC
-- Gazebo 中 best branch 相对更好，但所有分支都尚未成功收敛，系统验证仍是当前主要难点
-
-<div class="note">
-希望讨论：下一步应优先补简化仿真的消融实验，还是集中解决 Gazebo 中的收敛问题？
-</div>
