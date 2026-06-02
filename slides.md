@@ -414,139 +414,31 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 15. Gazebo 正面例子：平滑轨迹上可以稳定收敛
+# 15. Gazebo Circle-Easy：Static vs Maneuver-Aware
 
-<div class="cols">
-<div>
+**XY 轨迹叠加对比**
 
-**Easy circle**
+![width:980px](figures/gazebo_circle_easy_static_vs_aware_xy.png)
 
-![width:460px](figures/gazebo_circle_easy_full_xy.png)
+**误差曲线叠加对比**
 
-</div>
-<div>
-
-**Easy lemniscate**
-
-![width:460px](figures/gazebo_lemniscate_easy_full_xy.png)
-
-</div>
-</div>
-
-<table class="tbl compact" style="margin-top:16px;">
-<tr>
-<th>Trajectory</th>
-<th>Status</th>
-<th>RMSE (m)</th>
-<th>Mean solve (ms)</th>
-<th>Large XY excursion</th>
-</tr>
-<tr>
-<td>circle_easy_full</td>
-<td class="good">complete</td>
-<td>0.4918</td>
-<td>18.0</td>
-<td>never crossed xy&gt;1.0</td>
-</tr>
-<tr>
-<td>lemniscate_easy_full</td>
-<td class="good">complete</td>
-<td>0.4352</td>
-<td>20.7</td>
-<td>never crossed xy&gt;1.0</td>
-</tr>
-</table>
-
-<div class="note">
-这两页的意义是：Gazebo 并不是“完全跑不起来”。在几何更平滑、激励更连续的轨迹上，当前控制链路已经能给出稳定收敛结果。
-</div>
+![width:980px](figures/gazebo_circle_easy_static_vs_aware_error.png)
 
 ---
 
-# 16. 更复杂轨迹上的对比图：Circle-Box vs D-Shape
+# 16. Gazebo Box：Static vs Maneuver-Aware
 
-<div class="cols">
-<div>
+**XY 轨迹叠加对比**
 
-**Circle-Box**
+![width:980px](figures/gazebo_box_static_vs_aware_xy.png)
 
-![width:440px](figures/gazebo_circle_box_maneuver_aware_xy.png)
+**误差曲线叠加对比**
 
-<div class="box small">
-matched probe 中 maneuver-aware 分支可以跑完整条轨迹，但 XY RMSE 仍达到 <strong>8.99 m</strong>，已经明显高于 easy circle / lemniscate。
-</div>
-
-</div>
-<div>
-
-**D-Shape**
-
-![width:440px](figures/gazebo_d_shape_matched_xy.png)
-
-<div class="box small">
-D-shape 几何包含更强的转折和 setpoint-jump 成分，matched h40 结果进一步恶化到 <strong>15.95 m XY RMSE</strong>，轨迹明显发散。
-</div>
-
-</div>
-</div>
-
-<table class="tbl compact" style="margin-top:14px;">
-<tr>
-<th>Trajectory</th>
-<th>Status</th>
-<th>XY RMSE (m)</th>
-<th>Max XY error (m)</th>
-</tr>
-<tr>
-<td>circle_box maneuver-aware</td>
-<td class="good">complete</td>
-<td>8.99</td>
-<td>14.39</td>
-</tr>
-<tr>
-<td>d_shape matched h40</td>
-<td class="good">complete</td>
-<td class="bad">15.95</td>
-<td class="bad">18.03</td>
-</tr>
-</table>
+![width:980px](figures/gazebo_box_static_vs_aware_error.png)
 
 ---
 
-# 17. 不同轨迹揭示的方法边界
-
-<div class="cols">
-<div>
-
-**Smooth trajectory: current strength**
-
-![width:440px](figures/gazebo_circle_easy_full_xy.png)
-
-<div class="box bluebox small">
-circle / lemniscate 说明当前 DeePC + Gazebo 链路在平滑轨迹上已具备 closeout 价值：误差低、求解时间稳定、没有大幅漂移。
-</div>
-
-</div>
-<div>
-
-**Sharp-corner trajectory: current weakness**
-
-![width:440px](figures/gazebo_d_shape_matched_xy.png)
-
-<div class="box small">
-D-shape 暴露的是另一类问题：phase-aware regularization 本身还不够，数据覆盖、参考生成方式、以及跳变后的恢复能力都会同时成为瓶颈。
-</div>
-
-</div>
-</div>
-
-<div class="note">
-因此，更合理的组会表述应是：方法对“平滑多机动轨迹”已经显示出可行性，但对“由 setpoint-jump 驱动的尖角几何”还没有形成稳定优势。
-</div>
-
----
-
-# 18. 当前 Gazebo 结论
+# 17. 当前 Gazebo 结论
 
 当前 Gazebo 结果的结论要谨慎表述：
 
@@ -560,7 +452,7 @@ D-shape 暴露的是另一类问题：phase-aware regularization 本身还不够
 
 ---
 
-# 19. 下一步计划
+# 18. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
@@ -570,7 +462,7 @@ D-shape 暴露的是另一类问题：phase-aware regularization 本身还不够
 
 ---
 
-# 20. 总结
+# 19. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
