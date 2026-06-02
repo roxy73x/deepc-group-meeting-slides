@@ -139,6 +139,27 @@ Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive C
 
 ---
 
+# 2.1 Select-DeePC 公式解释
+
+<div class="eq small-eq">
+λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup> = λ<sub>g</sub> Σ<sub>i</sub> w<sub>i</sub>g<sub>i</sub><sup>2</sup>
+</div>
+
+<table class="tbl compact">
+<tr><th>项</th><th>作用</th><th>来源</th></tr>
+<tr><td>g</td><td>Hankel 数据列的组合系数，决定用哪些历史轨迹拼出未来轨迹</td><td>DeePC 数据方程</td></tr>
+<tr><td>λ<sub>g</sub></td><td>控制 g 正则化强度，抑制过拟合和噪声放大</td><td>原始 DeePC 正则项</td></tr>
+<tr><td>W<sub>k</sub></td><td>当前时刻的列权重矩阵，对不同 Hankel 列施加不同惩罚</td><td>Select-DeePC 在线数据选择</td></tr>
+<tr><td>w<sub>i</sub></td><td>第 i 列数据的权重：相关列小，不相关列大</td><td>由当前参考与数据字典的相关性计算</td></tr>
+<tr><td>g<sub>i</sub><sup>2</sup></td><td>第 i 列被使用程度的平方，使用越多惩罚越大</td><td>加权二范数展开</td></tr>
+</table>
+
+<div class="note">
+本质：不是硬删除数据，而是把“不相关数据”变贵，让优化器自然偏向当前任务更相关的历史轨迹。
+</div>
+
+---
+
 # 3. 参考工作二：Gain-Scheduled DeePC（动机参考）
 
 <div class="cols">
