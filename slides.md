@@ -106,7 +106,7 @@ Select-DeePC 关注的是非线性系统中的 DeePC 控制问题。如果一直
 该工作来自 DeePC 原作者 Florian Dörfler。
 </div>
 
-我先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。具体实现不是直接删除不相关列，而是把原来的 g 正则化项改成带列权重的形式：
+本文先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。具体实现不是直接删除不相关列，而是把原来的 g 正则化项改成带列权重的形式：
 
 <div class="eq small-eq">
 λ<sub>g</sub> ||g||<sub>2</sub><sup>2</sup> → λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup> = λ<sub>g</sub> Σ<sub>i</sub> w<sub>i</sub>g<sub>i</sub><sup>2</sup>
@@ -128,32 +128,25 @@ Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive C
 <div>
 
 ## 文献大概内容
+**核心思想**
+- 它认为 DeePC 原本更适合线性系统，但很多真实系统是非线性的，而且系统行为会随运行状态变化。于是它让 DeePC 根据一个可以测量的变量，在线切换不同的局部 Hankel 数据矩阵。
 
-- 面向非线性系统中的 DeePC 控制问题
-- 关注的问题是：固定 DeePC 配置可能只适合部分运行条件
-- 基本结论：DeePC 的数据表示或控制配置可以随当前工况变化
-- 本页只作为动机参考，不展开该文的具体算法细节
-
-<div class="note">
-这篇工作不是 UAV 场景，也不是本文要复现的算法；这里只引用其“固定配置可能不足”的思路。
-</div>
 
 </div>
 <div>
 
-## 本文借鉴方式
+##  启发
 
-- 借鉴一个保守判断：无人机不同飞行状态下，固定 DeePC 配置可能不够
-- 因此本文比较 static DeePC 与 maneuver-aware DeePC
-- 具体实现仍以本项目的数据选择、参数设置和仿真实验为主
-- 数据选择的直接参考仍是 Select-DeePC
+**无人机的 轨迹类型 可作为调度变量**
 
-<div class="eq small-eq">
+- 同一套 DeePC 参数，在平稳跟踪、转弯、折弯里，不一定都合适。
+
+<div class="eq">
 (λ<sub>g</sub>, λ<sub>y</sub>)<sub>k</sub> 由 φ<sub>k</sub> 查表选择
 </div>
 
 <div class="note">
-φ<sub>k</sub>：当前飞行阶段；λ<sub>g</sub>：g 系数正则化权重；λ<sub>y</sub>：输出松弛/数据不一致惩罚权重。
+这对应本文的 **phase-conditioned regularization**。
 </div>
 
 </div>
@@ -167,27 +160,27 @@ Ref: Guerrero, Lakshminarayanan, Rojas, “Gain-Scheduled Data-Enabled Predictiv
 
 # 4. UAV-specific controller adaptations
 
-这一页讲的是**控制器层面的 UAV 适配**：把 DeePC 的输入、约束和安全边界改成更符合四旋翼执行特性的形式。
+为了把这两篇文章的方案挪到UAV上来，所以做了一些修改
 
 <div class="cols">
 <div>
 
 **1. Hover-centered input**
 
-本文不直接优化绝对控制量，而是优化相对悬停输入的增量：
+不直接优化绝对控制量，而是优化相对悬停输入的增量：
 
 <div class="eq">
 u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 
-这样可以把控制量限制在悬停附近，减少无意义的大推力偏置。
+把控制量限制在悬停附近，减少无意义的大推力偏置。
 
 </div>
 <div>
 
 **2. Flight-envelope constraints**
 
-本文在 DeePC 优化中加入 UAV 执行安全边界：
+加入 UAV 执行安全边界：
 
 <div class="eq">
 Δu<sub>k</sub> ∈ U<sub>safe</sub>, &nbsp; y<sub>k</sub> ∈ Y<sub>safe</sub>
@@ -206,7 +199,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 # 5. UAV-specific phase/data design
 
-这一页讲的是**数据与相位层面的 UAV 适配**：把无人机轨迹几何特征显式用于 phase detection、数据组织和指标分析。
+更进一步，要把 DeePC 数据与 UAV 适配：把无人机轨迹几何特征显式用于此前的 Select-DeePC 和 Gain-Scheduled DeePC 中。主要修改包括：
 
 1. **Phase-balanced data dictionary**  
    本文按 smooth / transition / step-like 组织飞行数据，使数据集中不仅有平滑飞行，也覆盖转弯、加减速和阶跃恢复过程。
@@ -219,10 +212,10 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 
 3. **Axis-aware weighting / metrics**  
-   本文区分 XY 平面误差和 Z 轴高度误差，用于权重设计和结果分析。
+   单独分离 XY 平面误差和 Z 轴高度误差的权重设计
 
 <div class="note">
-区别：这一页处理的是 data and phase design，即怎么定义 phase、怎么组织数据、怎么分析 UAV tracking 误差。
+总而言之，本研究参考 Select-DeePC 和 Gain-Scheduled DeePC，特别面向无人机轨迹特征，设计了 **Maneuver-aware DeePC** 也就是 **机动感知 DeePC**。
 </div>
 
 ---
@@ -235,14 +228,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 # 7. 自写简化仿真环境与多 seed 结果
 
-当前主结果来自**自写的轻量级 Python 仿真环境**，不是 Gazebo：
+用轻量 Python 仿真环境做仿真，结果如下：
 
 <div class="cols">
 <div>
 
 **仿真环境**
 
-- 用于快速验证 DeePC 参数切换是否有效
 - 轨迹任务：step、figure8
 - 控制器：A1 Static DeePC vs A2 Maneuver-aware DeePC
 - 随机种子：41–50，共 10 个 seed
