@@ -467,39 +467,35 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 # 17. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
 
+<div class="cols">
+<div>
+
+![width:500px](figures/gazebo_circle_box_horizon_overlay_xy.png)
+
+</div>
+<div>
+
 <table class="tbl compact">
 <tr>
 <th>Setting</th>
-<th>Source artifact</th>
-<th>Status</th>
-<th>RMSE (m)</th>
 <th>XY RMSE (m)</th>
 <th>Max XY error (m)</th>
 <th>Solver ms</th>
 </tr>
 <tr>
-<td>N=25 matched baseline</td>
-<td>`maneuver_sanity_causal_v1`</td>
-<td class="good">complete</td>
-<td>6.38285</td>
+<td>N=25</td>
 <td>7.63435</td>
 <td>10.944</td>
 <td>51.147</td>
 </tr>
 <tr>
-<td>N=40 matched dataset</td>
-<td>`horizon40_matched_causal_v1`</td>
-<td class="good">complete</td>
-<td class="good">5.09476</td>
+<td>N=40</td>
 <td class="good">6.22933</td>
 <td class="good">9.231</td>
 <td>71.598</td>
 </tr>
 <tr>
-<td>N=80 matched dataset</td>
-<td>`horizon80_matched_causal_v1`</td>
-<td class="good">complete</td>
-<td class="bad">15.77594</td>
+<td>N=80</td>
 <td class="bad">19.33523</td>
 <td class="bad">26.368</td>
 <td class="bad">148.196</td>
@@ -507,11 +503,10 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 </table>
 
 <div class="note">
-`circle_box` 的 horizon 结果不是单调的。把数据集公平地匹配到 `N=40` 后，跟踪明显优于 `N=25`；但继续推到 `N=80` 会同时带来更高计算开销和更差闭环表现。
+`N=40` 是当前 `circle_box` 上更合理的平衡点；`N=80` 解算更慢，轨迹也明显发散。
 </div>
 
-<div class="note warn">
-因此当前最稳妥的表述不是“更长 horizon 更好”，而是：**horizon fairness 很重要，且在当前 stack 上 `N=40` 是比 `N=25` 更合理的点，但 `N=80` 已经明显过冲。**
+</div>
 </div>
 
 ---
