@@ -100,16 +100,20 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 # 2. 参考工作一：Select-DeePC / Online Data Selection
 
-Select-DeePC 关注的是非线性系统中的 DeePC 控制问题。它的出发点很直接：如果一直使用同一个全局 Hankel 数据集，其中会包含大量和当前控制任务关系不大的数据，可能导致预测质量下降，也会增加优化中的数据失配。
+Select-DeePC 关注的是非线性系统中的 DeePC 控制问题。如果一直使用同一个全局 Hankel 数据集，其中会包含大量和当前控制任务关系不大的数据，可能导致预测质量下降，也会增加优化中的数据失配。也就是**当前控制任务应优先使用当前更相关的数据**。
 
 <div class="note">
-该工作包含 DeePC 原始方向的重要作者 Florian Dörfler，因此可以作为近期“在线选择相关数据”思路的参考。
+该工作来自 DeePC 原作者 Florian Dörfler。
 </div>
 
-本文没有直接复现 Select-DeePC 的具体算法，而是借鉴它的核心逻辑：**当前控制任务应优先使用当前更相关的数据**。在实现上，我先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。
+我先估计当前参考在数据字典中的投影系数，再用这个系数判断哪些 Hankel 列对当前参考更有贡献。具体实现不是直接删除不相关列，而是把原来的 g 正则化项改成带列权重的形式：
 
 <div class="eq small-eq">
-相关列：降低 g 正则化惩罚；不相关列：提高 g 正则化惩罚
+λ<sub>g</sub> ||g||<sub>2</sub><sup>2</sup> → λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup> = λ<sub>g</sub> Σ<sub>i</sub> w<sub>i</sub>g<sub>i</sub><sup>2</sup>
+</div>
+
+<div class="note">
+相关列：w<sub>i</sub>=1，惩罚较小；不相关列：w<sub>i</sub>=w<sub>off</sub>&gt;1，惩罚较大。这样优化器会优先使用相关 Hankel 列，但仍保留其他列作为备选。
 </div>
 
 <div class="ref">
