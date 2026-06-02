@@ -103,36 +103,30 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 <div class="cols">
 <div>
 
-## Choose Wisely, 2025
+## 文献大概内容
 
-**为什么参考它**
+- 面向非线性系统中的 DeePC 控制问题
+- 认为固定使用全局 Hankel 数据集可能带来冗余和数据失配
+- 核心思想：在线选择与当前控制任务更相关的数据
+- 目标是提高当前时刻的预测质量，并降低不相关数据对优化的影响
 
-- 主题直接对应：online data selection for DeePC
-- Florian Dörfler 是 DeePC 原始方向的重要作者之一
-- 核心思想：每个时刻只使用与当前任务更相关的数据
-- 面向非线性系统，避免固定全局 Hankel 数据集带来的冗余和失配
+<div class="note">
+这篇工作包含 DeePC 原始方向的重要作者 Florian Dörfler，因此适合作为近期数据选择思路的参考。
+</div>
 
 </div>
 <div>
 
-## 本文数据选择公式
+## 本文借鉴方式
 
-先用当前参考构造一个参考一致的 DeePC 系数：
-
-<div class="eq small-eq">
-g<sub>r</sub> = H<sup>†</sup> [u<sub>ini</sub>; y<sub>ini</sub>; u<sub>ref</sub>; y<sub>ref</sub>]
-</div>
-
-用系数幅值作为 Hankel 列相关性评分：
+- 借鉴的是“当前任务对应当前相关数据”的思想
+- 没有直接复现原文算法，而是采用更简单的软局部数据选择
+- 实现上先估计当前参考在数据字典中的投影系数
+- 再根据该系数判断哪些 Hankel 列对当前参考更有贡献
 
 <div class="eq small-eq">
-s<sub>i</sub> = |(g<sub>r</sub>)<sub>i</sub>|,&nbsp;&nbsp; I<sub>k</sub> = TopK<sub>i</sub>(s<sub>i</sub>)
-</div>
-
-在 DeePC 中降低被选列的 g 正则化惩罚：
-
-<div class="eq small-eq">
-λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup>,&nbsp;&nbsp; w<sub>i</sub>=1 if i∈I<sub>k</sub>, else w<sub>i</sub>=w<sub>off</sub>
+相关列：降低 g 正则化惩罚<br>
+不相关列：提高 g 正则化惩罚
 </div>
 
 </div>
@@ -144,32 +138,39 @@ Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive C
 
 ---
 
-# 3. 参考工作二：Gain-Scheduled DeePC
+# 3. 参考工作二：Gain-Scheduled DeePC（动机参考）
 
 <div class="cols">
 <div>
 
-## Gain-Scheduled DeePC, 2025
+## 文献大概内容
 
-**核心思想**
+- 面向非线性系统中的 DeePC 控制问题
+- 关注的问题是：固定 DeePC 配置可能只适合部分运行条件
+- 基本结论：DeePC 的数据表示或控制配置可以随当前工况变化
+- 本页只作为动机参考，不展开该文的具体算法细节
 
-- 它认为 DeePC 原本更适合线性系统，但很多真实系统是非线性的，而且系统行为会随运行状态变化。于是它让 DeePC 根据一个可以测量的变量，在线切换不同的局部 Hankel 数据矩阵。
-
+<div class="note">
+这篇工作不是 UAV 场景，也不是本文要复现的算法；这里只引用其“固定配置可能不足”的思路。
+</div>
 
 </div>
 <div>
 
-## 启发
+## 本文借鉴方式
 
-**无人机的 轨迹类型 可作为调度变量**
+- 借鉴一个保守判断：无人机不同飞行状态下，固定 DeePC 配置可能不够
+- 因此本文比较 static DeePC 与 maneuver-aware DeePC
+- 具体实现仍以本项目的数据选择、参数设置和仿真实验为主
+- 数据选择的直接参考仍是 Select-DeePC
 
-- 同一套 DeePC 参数，在平稳跟踪、转弯、折弯里，不一定都合适。
-
-<div class="eq">
-(λ<sub>g</sub>, λ<sub>y</sub>)<sub>k</sub> = (λ<sub>g</sub>, λ<sub>y</sub>)(φ<sub>k</sub>)
+<div class="eq small-eq">
+(λ<sub>g</sub>, λ<sub>y</sub>)<sub>k</sub> 由 φ<sub>k</sub> 查表选择
 </div>
 
-这对应本文的 **phase-conditioned regularization**。
+<div class="note">
+φ<sub>k</sub>：当前飞行阶段；λ<sub>g</sub>：g 系数正则化权重；λ<sub>y</sub>：输出松弛/数据不一致惩罚权重。
+</div>
 
 </div>
 </div>
@@ -180,71 +181,7 @@ Ref: Guerrero, Lakshminarayanan, Rojas, “Gain-Scheduled Data-Enabled Predictiv
 
 ---
 
-# 4. 从已有研究到 UAV tracking 选题
-
-两篇近期工作给出的共同启发：**DeePC 的数据和参数可以随系统状态、任务上下文或工作区域变化。**  
-本项目将这一思想迁移到无人机轨迹跟踪中的机动阶段切换。
-
-<div class="cols">
-<div>
-
-**已有工作关注**
-
-- Select-DeePC：按当前任务选择相关数据
-- Gain-Scheduled DeePC：按工作点切换局部 DeePC 表示
-- 共同目标：提升非线性系统中的预测准确性和优化可行性
-
-</div>
-<div>
-
-**本文选题**
-
-> 对于 smooth、transition、step-like 等不同轨迹阶段，是否可以根据当前阶段调整 DeePC 的正则化参数和数据支持，从而提升无人机轨迹跟踪性能？
-
-</div>
-</div>
-
-<div class="note">
-本项目不是重新提出 DeePC，而是形成 UAV-aware phase-conditioned DeePC：按无人机轨迹阶段定义 phase，并加入 hover-centered input、飞行包线约束和 phase-dependent data interface。
-</div>
-
----
-
-# 5. 方法框架：公式来源与参数调度
-
-相位变量 φ<sub>k</sub> 不是从某篇论文中直接照搬的公式，而是把两篇参考工作的思想映射到 UAV 轨迹跟踪中：
-
-<table class="tbl compact">
-<tr><th>来源</th><th>文献中的思想</th><th>本文中的映射</th></tr>
-<tr><td>Select-DeePC</td><td>每个时刻根据当前轨迹选择相关数据列</td><td>不同 UAV phase 对应不同数据相关性：D<sub>k</sub>=D(φ<sub>k</sub>)</td></tr>
-<tr><td>Gain-Scheduled DeePC</td><td>用 measurable scheduling variable 选择局部 DeePC 表示</td><td>用可在线计算的 trajectory phase 作为 scheduling variable</td></tr>
-<tr><td>本文 UAV 设计</td><td>参考轨迹几何与跟踪误差可直接在线获得</td><td>φ<sub>k</sub>=f(r<sub>k</sub>, r<sub>k−1</sub>, e<sub>k</sub>)</td></tr>
-</table>
-
-<div class="eq">
-φ<sub>k</sub> = f(r<sub>k</sub>, r<sub>k−1</sub>, e<sub>k</sub>) ∈ { smooth, transition, step-like }
-</div>
-
----
-
-# 6. 方法框架：超参数选择理由
-
-当前先验证 phase-conditioned regularization，因此根据 phase 选择 DeePC 正则化参数：
-
-<table class="tbl compact">
-<tr><th>Phase</th><th>λ<sub>g</sub></th><th>λ<sub>y</sub></th><th>选择理由</th></tr>
-<tr><td>smooth</td><td>30</td><td>1.0e4</td><td>沿用 static baseline；较强 g 正则化抑制过拟合和输入抖动</td></tr>
-<tr><td>transition</td><td>20</td><td>1.2e4</td><td>降低 λ<sub>g</sub> 提高响应灵活性；提高 λ<sub>y</sub> 容忍轨迹切换时的数据不匹配</td></tr>
-<tr><td>step-like</td><td>12</td><td>1.0e4</td><td>进一步降低 λ<sub>g</sub>，避免目标突变时控制过于保守；λ<sub>y</sub> 保持 baseline 防止误差被过度松弛</td></tr>
-</table>
-
-<div class="note">
-这组参数不是理论最优解，而是基于 static baseline 和初步参数扫描得到的经验折中。后续需要通过更系统的网格搜索、phase-resolved 指标和消融实验确认泛化性。
-</div>
-
----
-
-# 7. UAV-specific controller adaptations
+# 4. UAV-specific controller adaptations
 
 这一页讲的是**控制器层面的 UAV 适配**：把 DeePC 的输入、约束和安全边界改成更符合四旋翼执行特性的形式。
 
@@ -283,7 +220,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 8. UAV-specific phase/data design
+# 5. UAV-specific phase/data design
 
 这一页讲的是**数据与相位层面的 UAV 适配**：把无人机轨迹几何特征显式用于 phase detection、数据组织和指标分析。
 
@@ -306,13 +243,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 9. 方法图
+# 6. 方法图
 
 ![width:920px](figures/fig01_method_overview.png)
 
 ---
 
-# 10. 自写简化仿真环境与多 seed 结果
+# 7. 自写简化仿真环境与多 seed 结果
 
 当前主结果来自**自写的轻量级 Python 仿真环境**，不是 Gazebo：
 
@@ -347,13 +284,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 11. 主结果图
+# 8. 主结果图
 
 ![width:920px](figures/fig02_main_results.png)
 
 ---
 
-# 12. Gazebo 模型的特殊性
+# 9. Gazebo 模型的特殊性
 
 Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
 
@@ -386,7 +323,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 13. Gazebo 分支对比：量化结果
+# 10. Gazebo 分支对比：量化结果
 
 目前仓库中只有 best branch 的轨迹图，因此这里先用分支表说明对比关系：
 
@@ -404,7 +341,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 14. Gazebo Circle-Box 对比：Static vs Maneuver-Aware
+# 11. Gazebo Circle-Box 对比：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -425,7 +362,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 15. Gazebo Circle-Easy：Static vs Maneuver-Aware
+# 12. Gazebo Circle-Easy：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -446,7 +383,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. Gazebo Circle-Easy 方法消融
+# 13. Gazebo Circle-Easy 方法消融
 
 <div class="cols">
 <div>
@@ -492,7 +429,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 17. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
+# 14. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -513,7 +450,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 18. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
+# 15. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
 
 <div class="cols">
 <div>
@@ -559,7 +496,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 19. 当前 Gazebo 结论
+# 16. 当前 Gazebo 结论
 
 当前 Gazebo 结果的结论要谨慎表述：
 
@@ -573,7 +510,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 20. 下一步计划
+# 17. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
@@ -583,7 +520,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 21. 总结
+# 18. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
