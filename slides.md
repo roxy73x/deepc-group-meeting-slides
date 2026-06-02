@@ -28,6 +28,7 @@ strong { color: #1e40af; }
 .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
 .box { border: 1px solid #dbeafe; border-radius: 14px; padding: 18px 20px; background: #ffffff; }
 .bluebox { background: #eff6ff; }
+.placeholder { border: 2px dashed #93c5fd; border-radius: 14px; background: #f8fbff; padding: 22px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #64748b; }
 .tbl { width: 100%; border-collapse: collapse; font-size: 23px; }
 .tbl.compact { font-size: 18px; }
 .tbl th { background: #eff6ff; color: #1e40af; }
@@ -383,37 +384,104 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 13. 当前 Gazebo 结果与问题
+# 13. Gazebo 分支对比：量化结果
 
-![width:760px](figures/gazebo_support384_off4_time_colored_xy.png)
+目前仓库中只有 best branch 的轨迹图，因此这里先用分支表说明对比关系：
+
+<table class="tbl compact">
+<tr><th>Branch</th><th>Completed</th><th>RMSE / m</th><th>Solver / ms</th><th>说明</th></tr>
+<tr><td><strong>support384/off4</strong></td><td>yes</td><td class="good">2.0307</td><td>97.9</td><td>当前 best branch</td></tr>
+<tr><td>support512/off4</td><td>yes</td><td>2.8865</td><td>31.8</td><td>同类 local selection，对比更大支持集</td></tr>
+<tr><td>no local selection</td><td>yes</td><td>3.4126</td><td>163.7</td><td>无局部数据选择，对比数据支持策略</td></tr>
+<tr><td>Q<sub>z</sub>=2.0 baseline</td><td>yes</td><td>3.7575</td><td>77.3</td><td>较弱 z 权重 baseline</td></tr>
+</table>
 
 <div class="note warn">
-当前 Gazebo 结果的结论要谨慎表述：maneuver-aware DeePC 的轨迹表现好于 static baseline，但两者都没有真正收敛；目前还没有找到一组能够在 Gazebo 中稳定成功收敛的参数和数据配置。
+这张表能说明 best branch 优于几个 Gazebo 分支，但不能替代轨迹图对比。当前仍应表述为：Gazebo 中 best branch 相对更好，但整体仍未收敛。
 </div>
-
-这说明目前存在两个层面的工作：
-
-- **方法层面**：简化仿真已经显示 phase-aware regularization 有收益
-- **系统层面**：Gazebo 中仍需解决模型差异、输入约束、数据激励、时间同步和因果记录问题
 
 ---
 
-# 14. 下一步计划
+# 14. Gazebo 可视化对比：仍需补齐图片
+
+<div class="cols">
+<div>
+
+**Static / baseline 轨迹图**
+
+<div class="placeholder">
+<strong>待补图</strong><br>
+figures/gazebo_static_baseline_xy.png<br>
+<span class="small">建议内容：XY 轨迹，含 reference 和 executed path</span>
+</div>
+
+</div>
+<div>
+
+**Maneuver-aware / best branch 轨迹图**
+
+![width:450px](figures/gazebo_support384_off4_time_colored_xy.png)
+
+</div>
+</div>
+
+<div class="cols" style="margin-top:18px;">
+<div>
+
+**Static / baseline 误差曲线**
+
+<div class="placeholder">
+<strong>待补图</strong><br>
+figures/gazebo_static_baseline_error.png<br>
+<span class="small">建议内容：position error vs time，标出未收敛/漂移段</span>
+</div>
+
+</div>
+<div>
+
+**Maneuver-aware / best branch 误差曲线**
+
+<div class="placeholder">
+<strong>待补图</strong><br>
+figures/gazebo_support384_off4_error.png<br>
+<span class="small">建议内容：position error vs time，和 baseline 同坐标轴</span>
+</div>
+
+</div>
+</div>
+
+---
+
+# 15. 当前 Gazebo 结论
+
+当前 Gazebo 结果的结论要谨慎表述：
+
+- best branch 的 RMSE 低于几个 Gazebo 分支，包括 no-local-selection 和 Q<sub>z</sub>=2.0 baseline
+- 但是所有分支都没有真正收敛，best branch 也存在后段漂移
+- 目前还没有找到一组能够在 Gazebo 中稳定成功收敛的参数和数据配置
+
+<div class="note warn">
+因此，Gazebo 部分目前不是“成功验证方法”，而是说明高保真链路中仍存在模型差异、输入约束、数据激励、时间同步和因果记录问题。
+</div>
+
+---
+
+# 16. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
 3. 检查数据采集中的 excitation 强度和 phase coverage
-4. 在 Gazebo 中重点处理时间同步、输入约束、u/y 因果对齐
+4. 补齐 Gazebo 的 baseline / best branch 对比图和误差曲线
 5. 将 Gazebo 目标从“直接收敛”拆成 smoke test → tracking improvement → stable convergence
 
 ---
 
-# 15. 总结
+# 17. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
 - 自写简化仿真中，A2 在 step 和 figure8 上稳定优于 static DeePC
-- 但 Gazebo 中两种方法都尚未成功收敛，说明系统验证仍是当前主要难点
+- Gazebo 中 best branch 相对更好，但所有分支都尚未成功收敛，系统验证仍是当前主要难点
 
 <div class="note">
 希望讨论：下一步应优先补简化仿真的消融实验，还是集中解决 Gazebo 中的收敛问题？
