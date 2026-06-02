@@ -87,172 +87,153 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 </div>
 
 <div class="note">
-原始 DeePC 工作证明：在线性确定系统中，DeePC 与经典 MPC 存在等价关系；在噪声和非线性场景中，通常需要正则化和鲁棒化处理。
+原始 DeePC 工作给出了数据驱动 MPC 的基本框架。后续工作进一步关注：非线性系统中如何选择数据、如何根据工作区域切换局部 DeePC 表示。
 </div>
 
 ---
 
-# 2. 为什么固定参数可能不够：已有研究基础
+# 2. 为什么固定参数可能不够：近期参考工作
 
-这个问题有明确文献背景，不是从零提出。已有研究大致形成了三条线索：
+本项目的直接参考工作可以收敛到两条最新方向：
 
 <div class="cols3">
 <div class="box bluebox">
 <h3>原始 DeePC</h3>
-<p>用输入输出数据直接构造预测控制问题；在线性确定系统中与 MPC 等价。</p>
+<p>建立 DeePC 与 MPC 的关系，给出输入输出数据驱动的预测控制基本形式。</p>
 <p class="small">Coulson, Lygeros, Dörfler, 2019</p>
 </div>
 <div class="box">
-<h3>Regularized / Robust DeePC</h3>
-<p>在噪声、扰动和数据不完美时，通过正则化或 min-max 鲁棒形式提高稳定性。</p>
-<p class="small">Coulson et al., 2019; Huang et al., 2021</p>
+<h3>Select-DeePC</h3>
+<p>每个时刻只选择与当前非线性任务最相关的数据列，避免固定全局数据集带来的冗余和失配。</p>
+<p class="small">Näf, Moffat, Eising, Dörfler, 2025</p>
 </div>
 <div class="box bluebox">
-<h3>Data selection / Local data</h3>
-<p>数据越多不一定越好，选择更相关的数据片段可以降低计算量和异常数据影响。</p>
-<p class="small">Select-DeePC / online data selection</p>
+<h3>Gain-Scheduling DeePC</h3>
+<p>把非线性系统工作区间划分为局部区域，并在线切换局部 Hankel 矩阵或 DeePC 表示。</p>
+<p class="small">Zieglmeier et al., 2025</p>
 </div>
 </div>
 
 <div class="note">
-这些工作说明：DeePC 本身已经不是“一个固定参数跑到底”的方法。正则化强度、数据字典、鲁棒处理和控制约束都会显著影响性能。
+这两篇工作都说明：DeePC 不一定要用固定的全局数据集和固定参数。我的项目进一步把这种“选择/切换”思想落到无人机轨迹阶段上。
 </div>
 
 ---
 
-# 3. 论文简述：原始 DeePC 与鲁棒 DeePC
+# 3. 参考工作一：Select-DeePC / Online Data Selection
 
 <div class="cols">
 <div>
 
-## Coulson et al., 2019
+## Choose Wisely, 2025
 
-**核心贡献**
+**核心思想**
 
-- 用一次历史输入输出数据构造 DeePC 优化问题
-- 不显式辨识 A, B, C, D
-- 对确定 LTI 系统，可与 MPC 建立等价关系
-- 对随机/非线性情形，引入正则化项提高表现
-
-<div class="eq">
-[U_p;Y_p;U_f;Y_f]g = [u_{ini};y_{ini};u;y]
-</div>
+- 面向非线性系统，标准 DeePC 的全局数据矩阵可能包含大量无关数据
+- 每个控制时刻只选择最相关的数据列
+- 用局部相关数据在 trajectory space 中隐式线性化当前系统行为
+- 文中验证了 norm-based 与 manifold-embedding-based selection
 
 </div>
 <div>
 
-## Huang et al., 2021
+## 对本项目的启发
 
-**核心贡献**
+**不是所有飞行数据都同等有用**
 
-- 将带噪输入输出数据建模为不确定集
-- 用 min-max 优化得到 robust DeePC
-- 给出可 tractable reformulation 和性能保证
-- 说明 regularized DeePC 可看成 robust DeePC 的一种特例/推广
+- smooth tracking 需要平滑稳定数据
+- transition 需要包含转弯、加减速的数据
+- step-like 需要覆盖目标突变后的恢复过程
 
 <div class="eq">
-min_u \; max_{\xi \in \Xi} \; J(u,y,\xi)
+D_k = D(φ_k)
 </div>
+
+这自然引出 **phase-dependent local data selection**。
 
 </div>
 </div>
 
 <div class="ref">
-Refs: Coulson, Lygeros, Dörfler, “Data-Enabled Predictive Control: In the Shallows of the DeePC”; Huang, Zhen, Lygeros, Dörfler, “Robust Data-Enabled Predictive Control: Tractable Formulations and Performance Guarantees”.
+Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive Control for Nonlinear Systems Using Online Data Selection”, 2025.
 </div>
 
 ---
 
-# 4. 论文简述：Data selection DeePC 对本项目的启发
+# 4. 参考工作二：Gain-Scheduling DeePC
 
 <div class="cols">
 <div>
 
-## Recent data-selection DeePC
+## GS-DeePC, 2025
 
-**动机**
+**核心思想**
 
-- DeePC 的优化维度随数据列数增长
-- 数据中可能包含无关片段、异常片段或低质量片段
-- 对非线性系统，当前工作点附近或当前任务相关的数据更有用
-
-**典型思路**
-
-- online data selection
-- local / relevant trajectory columns
-- norm-based 或 embedding-based data selection
+- 非线性系统存在明显 operating-region dependence
+- 不使用一个全局 Hankel 矩阵
+- 按可测 scheduling variable 划分局部工作区域
+- 每个区域构造局部 Hankel 数据表示
+- 通过区域切换处理非线性系统控制
 
 </div>
 <div>
 
-## 对 UAV phase-aware DeePC 的启发
+## 对本项目的启发
 
-**不是所有飞行数据都同等有用**
+**无人机也有类似“工作区域/机动阶段”**
 
-- smooth tracking 需要平滑稳定数据
-- transition 需要包含转弯/加减速的数据
-- step-like 需要覆盖目标突变后的恢复过程
+- smooth：稳定跟踪，控制输入应更平滑
+- transition：曲率或速度方向变化，预测误差容易放大
+- step-like：目标突变，重点是减少超调和恢复时间
 
 <div class="eq">
-D_k = D(φ_k), \quad φ_k \in \{smooth, transition, step-like\}
+(λ_g, λ_y)_k = (λ_g, λ_y)(φ_k)
 </div>
 
-这自然引出后续的 **phase-dependent local data selection**。
+这对应 **maneuver-aware parameter scheduling**。
 
 </div>
 </div>
 
-<div class="note">
-本项目当前先验证 phase-conditioned regularization；如果后续做数据选择，就可以把 Select-DeePC 的“选择相关数据”思想改成“按无人机机动阶段选择相关数据”。
-</div>
-
----
-
-# 5. 文献脉络示意
-
-![width:980px](figures/fig00_literature_context.svg)
-
-<div class="small">
-这张图是根据本项目汇报需要重绘的文献脉络示意图，便于说明本工作是在已有 DeePC / robust DeePC / data selection / UAV MPC 基础上的场景化改进。
+<div class="ref">
+Ref: Zieglmeier et al., “Gain-Scheduling Data-Enabled Predictive Control for Nonlinear Systems with Linearized Operating Regions”, 2025.
 </div>
 
 ---
 
-# 6. 从已有研究到 UAV tracking 的切入点
+# 5. 从已有研究到 UAV tracking 的切入点
 
-原有研究主要回答：**数据驱动预测控制如何在未知系统、噪声数据或不确定性下工作。**  
-本项目更关注：**无人机在不同机动阶段下，DeePC 参数和数据使用是否应该变化。**
+两篇近期工作给出的共同启发：**DeePC 的数据和参数可以随系统状态、任务上下文或工作区域变化。**
 
 <div class="cols">
 <div>
 
-**已有思想**
+**已有工作关注**
 
-- MPC / DeePC 都是滚动优化
-- robust / regularized DeePC 说明正则化很关键
-- data selection 说明数据字典需要选择
-- gain scheduling / switched MPC 说明不同工作区间可使用不同参数
+- Select-DeePC：按当前任务选择相关数据
+- GS-DeePC：按工作区域切换局部 DeePC 表示
+- 共同目标：提升非线性系统中的预测准确性和优化可行性
 
 </div>
 <div>
 
-**UAV-specific 问题**
+**本项目关注**
 
-- 四旋翼通常围绕悬停平衡点运动
-- XY 平面和 Z 轴高度控制难度不同
-- step / turn / smooth tracking 对控制输入的要求不同
-- 安全飞行需要速度、加速度、倾角和输入变化率约束
+- 按无人机轨迹阶段定义 phase
+- 按 phase 调整正则化参数
+- 后续按 phase 选择数据字典
+- 加入 hover-centered input 和飞行包线约束
 
 </div>
 </div>
 
 <div class="note">
-本项目不是声称“首次提出 phase-aware DeePC”，而是把已有正则化、自适应和数据选择思路具体化到 quadrotor tracking 场景。
+所以，本项目不是重新提出 DeePC，而是把“在线数据选择”和“增益调度式 DeePC”迁移到 quadrotor tracking 中，形成 UAV-aware phase-conditioned DeePC。
 </div>
 
 ---
 
-# 7. 当前选题
+# 6. 当前选题
 
 ## Phase-aware / Maneuver-aware UAV DeePC
 
@@ -268,7 +249,7 @@ D_k = D(φ_k), \quad φ_k \in \{smooth, transition, step-like\}
 
 ---
 
-# 8. 方法框架
+# 7. 方法框架
 
 相位标签由参考轨迹变化和跟踪误差共同决定：
 
@@ -287,7 +268,7 @@ D_k = D(φ_k), \quad φ_k \in \{smooth, transition, step-like\}
 
 ---
 
-# 9. UAV-specific adaptations
+# 8. UAV-specific adaptations
 
 在基础 phase-aware DeePC 之上，可以做几类面向四旋翼的特殊适配：
 
@@ -323,7 +304,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 10. UAV-specific data and phase design
+# 9. UAV-specific data and phase design
 
 1. **Phase-balanced data dictionary**  
    数据集中不能只有平滑飞行，还需要覆盖转弯、加减速、阶跃响应等机动片段。
@@ -344,13 +325,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 11. 方法图
+# 10. 方法图
 
 ![width:920px](figures/fig01_method_overview.png)
 
 ---
 
-# 12. 已有实验设置
+# 11. 已有实验设置
 
 实验采用最终协议 A：
 
@@ -385,7 +366,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 13. 多 seed 结果
+# 12. 多 seed 结果
 
 <table class="tbl">
 <tr>
@@ -410,13 +391,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 14. 主结果图
+# 13. 主结果图
 
 ![width:920px](figures/fig02_main_results.png)
 
 ---
 
-# 15. Phase timeline 图
+# 14. Phase timeline 图
 
 ![width:920px](figures/fig03_phase_timeline.png)
 
@@ -426,7 +407,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 16. 结果如何解释
+# 15. 结果如何解释
 
 当前结果支持的结论：
 
@@ -446,7 +427,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 17. 需要补的评价指标
+# 16. 需要补的评价指标
 
 <div class="cols3">
 <div class="box">
@@ -481,7 +462,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 18. 难点一：相位定义不能太启发式
+# 17. 难点一：相位定义不能太启发式
 
 相位标签需要满足：
 
@@ -495,7 +476,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 19. 难点二：数据越干净不一定越好
+# 18. 难点二：数据越干净不一定越好
 
 DeePC 依赖数据字典覆盖系统行为。采集数据时存在一个矛盾：
 
@@ -510,7 +491,7 @@ data quality &nbsp; vs. &nbsp; persistence of excitation
 
 ---
 
-# 20. 难点三：horizon 和数据集匹配
+# 19. 难点三：horizon 和数据集匹配
 
 预测时域 N 不是单调调参旋钮。
 
@@ -524,7 +505,7 @@ N<sub>dataset</sub> = N<sub>controller</sub>
 
 ---
 
-# 21. 难点四：Gazebo / ROS 验证
+# 20. 难点四：Gazebo / ROS 验证
 
 Gazebo 验证的目标不是刷主结果，而是说明方法能进入更真实的控制链路。
 
@@ -540,13 +521,13 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 22. Gazebo 轨迹预览
+# 21. Gazebo 轨迹预览
 
 ![width:860px](figures/gazebo_support384_off4_time_colored_xy.png)
 
 ---
 
-# 23. 下一步计划
+# 22. 下一步计划
 
 1. 固定公平 baseline，避免 static DeePC 太弱
 2. 补充 phase-resolved RMSE 和 phase occupancy
@@ -556,7 +537,7 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 24. 总结
+# 23. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
