@@ -32,6 +32,7 @@ strong { color: #1e40af; }
 .tbl th, .tbl td { border: 1px solid #bfdbfe; padding: 11px 12px; text-align: center; }
 .good { color: #16a34a; font-weight: 700; }
 .eq { font-family: "Times New Roman", "Cambria Math", serif; font-size: 34px; text-align: center; color: #1e40af; margin: 18px 0; }
+.ref { font-size: 16px; color: #64748b; margin-top: 10px; }
 img { max-width: 100%; max-height: 430px; object-fit: contain; }
 </style>
 
@@ -104,12 +105,12 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 <div class="box">
 <h3>Regularized / Robust DeePC</h3>
 <p>在噪声、扰动和数据不完美时，通过正则化或 min-max 鲁棒形式提高稳定性。</p>
-<p class="small">Coulson et al.; Huang et al.</p>
+<p class="small">Coulson et al., 2019; Huang et al., 2021</p>
 </div>
 <div class="box bluebox">
 <h3>Data selection / Local data</h3>
 <p>数据越多不一定越好，选择更相关的数据片段可以降低计算量和异常数据影响。</p>
-<p class="small">Recent data-selection DeePC work</p>
+<p class="small">Select-DeePC / online data selection</p>
 </div>
 </div>
 
@@ -119,7 +120,95 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ---
 
-# 3. 文献脉络示意
+# 3. 论文简述：原始 DeePC 与鲁棒 DeePC
+
+<div class="cols">
+<div>
+
+## Coulson et al., 2019
+
+**核心贡献**
+
+- 用一次历史输入输出数据构造 DeePC 优化问题
+- 不显式辨识 A, B, C, D
+- 对确定 LTI 系统，可与 MPC 建立等价关系
+- 对随机/非线性情形，引入正则化项提高表现
+
+<div class="eq">
+[U_p;Y_p;U_f;Y_f]g = [u_{ini};y_{ini};u;y]
+</div>
+
+</div>
+<div>
+
+## Huang et al., 2021
+
+**核心贡献**
+
+- 将带噪输入输出数据建模为不确定集
+- 用 min-max 优化得到 robust DeePC
+- 给出可 tractable reformulation 和性能保证
+- 说明 regularized DeePC 可看成 robust DeePC 的一种特例/推广
+
+<div class="eq">
+min_u \; max_{\xi \in \Xi} \; J(u,y,\xi)
+</div>
+
+</div>
+</div>
+
+<div class="ref">
+Refs: Coulson, Lygeros, Dörfler, “Data-Enabled Predictive Control: In the Shallows of the DeePC”; Huang, Zhen, Lygeros, Dörfler, “Robust Data-Enabled Predictive Control: Tractable Formulations and Performance Guarantees”.
+</div>
+
+---
+
+# 4. 论文简述：Data selection DeePC 对本项目的启发
+
+<div class="cols">
+<div>
+
+## Recent data-selection DeePC
+
+**动机**
+
+- DeePC 的优化维度随数据列数增长
+- 数据中可能包含无关片段、异常片段或低质量片段
+- 对非线性系统，当前工作点附近或当前任务相关的数据更有用
+
+**典型思路**
+
+- online data selection
+- local / relevant trajectory columns
+- norm-based 或 embedding-based data selection
+
+</div>
+<div>
+
+## 对 UAV phase-aware DeePC 的启发
+
+**不是所有飞行数据都同等有用**
+
+- smooth tracking 需要平滑稳定数据
+- transition 需要包含转弯/加减速的数据
+- step-like 需要覆盖目标突变后的恢复过程
+
+<div class="eq">
+D_k = D(φ_k), \quad φ_k \in \{smooth, transition, step-like\}
+</div>
+
+这自然引出后续的 **phase-dependent local data selection**。
+
+</div>
+</div>
+
+<div class="note">
+本项目当前先验证 phase-conditioned regularization；如果后续做数据选择，就可以把 Select-DeePC 的“选择相关数据”思想改成“按无人机机动阶段选择相关数据”。
+</div>
+
+---
+
+# 5. 文献脉络示意
 
 ![width:980px](figures/fig00_literature_context.svg)
 
@@ -129,7 +218,7 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ---
 
-# 4. 从已有研究到 UAV tracking 的切入点
+# 6. 从已有研究到 UAV tracking 的切入点
 
 原有研究主要回答：**数据驱动预测控制如何在未知系统、噪声数据或不确定性下工作。**  
 本项目更关注：**无人机在不同机动阶段下，DeePC 参数和数据使用是否应该变化。**
@@ -163,7 +252,7 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ---
 
-# 5. 当前选题
+# 7. 当前选题
 
 ## Phase-aware / Maneuver-aware UAV DeePC
 
@@ -179,7 +268,7 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ---
 
-# 6. 方法框架
+# 8. 方法框架
 
 相位标签由参考轨迹变化和跟踪误差共同决定：
 
@@ -198,7 +287,7 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ---
 
-# 7. UAV-specific adaptations
+# 9. UAV-specific adaptations
 
 在基础 phase-aware DeePC 之上，可以做几类面向四旋翼的特殊适配：
 
@@ -234,7 +323,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 8. UAV-specific data and phase design
+# 10. UAV-specific data and phase design
 
 1. **Phase-balanced data dictionary**  
    数据集中不能只有平滑飞行，还需要覆盖转弯、加减速、阶跃响应等机动片段。
@@ -255,13 +344,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 9. 方法图
+# 11. 方法图
 
-![width:920px](figures/fig01_method_overview.svg)
+![width:920px](figures/fig01_method_overview.png)
 
 ---
 
-# 10. 已有实验设置
+# 12. 已有实验设置
 
 实验采用最终协议 A：
 
@@ -296,7 +385,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 11. 多 seed 结果
+# 13. 多 seed 结果
 
 <table class="tbl">
 <tr>
@@ -321,15 +410,15 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 12. 主结果图
+# 14. 主结果图
 
-![width:920px](figures/fig02_main_results.svg)
+![width:920px](figures/fig02_main_results.png)
 
 ---
 
-# 13. Phase timeline 图
+# 15. Phase timeline 图
 
-![width:920px](figures/fig03_phase_timeline.svg)
+![width:920px](figures/fig03_phase_timeline.png)
 
 <div class="small">
 用途：说明 online phase switching 是实际控制过程中的切换，不是事后重新标注。
@@ -337,7 +426,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 14. 结果如何解释
+# 16. 结果如何解释
 
 当前结果支持的结论：
 
@@ -357,7 +446,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 15. 需要补的评价指标
+# 17. 需要补的评价指标
 
 <div class="cols3">
 <div class="box">
@@ -392,7 +481,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 16. 难点一：相位定义不能太启发式
+# 18. 难点一：相位定义不能太启发式
 
 相位标签需要满足：
 
@@ -406,7 +495,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 17. 难点二：数据越干净不一定越好
+# 19. 难点二：数据越干净不一定越好
 
 DeePC 依赖数据字典覆盖系统行为。采集数据时存在一个矛盾：
 
@@ -421,7 +510,7 @@ data quality &nbsp; vs. &nbsp; persistence of excitation
 
 ---
 
-# 18. 难点三：horizon 和数据集匹配
+# 20. 难点三：horizon 和数据集匹配
 
 预测时域 N 不是单调调参旋钮。
 
@@ -435,7 +524,7 @@ N<sub>dataset</sub> = N<sub>controller</sub>
 
 ---
 
-# 19. 难点四：Gazebo / ROS 验证
+# 21. 难点四：Gazebo / ROS 验证
 
 Gazebo 验证的目标不是刷主结果，而是说明方法能进入更真实的控制链路。
 
@@ -451,13 +540,13 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 20. Gazebo 轨迹预览
+# 22. Gazebo 轨迹预览
 
-![width:860px](figures/gazebo_support384_off4_time_colored_xy.svg)
+![width:860px](figures/gazebo_support384_off4_time_colored_xy.png)
 
 ---
 
-# 21. 下一步计划
+# 23. 下一步计划
 
 1. 固定公平 baseline，避免 static DeePC 太弱
 2. 补充 phase-resolved RMSE 和 phase occupancy
@@ -467,7 +556,7 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 22. 总结
+# 24. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
