@@ -404,41 +404,13 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 # 14. Gazebo Circle-Box 对比：Static vs Maneuver-Aware
 
-<div class="cols">
-<div>
+**XY 轨迹叠加对比**
 
-**Static DeePC 轨迹图**
+![width:980px](figures/gazebo_circle_box_static_vs_aware_xy.png)
 
-![width:450px](figures/gazebo_static_baseline_xy.png)
+**误差曲线叠加对比**
 
-</div>
-<div>
-
-**Maneuver-aware DeePC 轨迹图**
-
-![width:450px](figures/gazebo_circle_box_maneuver_aware_xy.png)
-
-</div>
-</div>
-
-<table style="width:100%; margin-top:18px;">
-<tr>
-<td style="width:50%; vertical-align:top;">
-
-**Static DeePC 误差曲线**
-
-![width:450px](figures/gazebo_static_baseline_error.png)
-
-</td>
-<td style="width:50%; vertical-align:top;">
-
-**Maneuver-aware DeePC 误差曲线**
-
-![width:450px](figures/gazebo_circle_box_maneuver_aware_error.png)
-
-</td>
-</tr>
-</table>
+![width:980px](figures/gazebo_circle_box_static_vs_aware_error.png)
 
 ---
 
