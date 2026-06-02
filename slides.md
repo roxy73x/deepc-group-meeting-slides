@@ -112,8 +112,6 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 - 核心思想：每个时刻只使用与当前任务更相关的数据
 - 面向非线性系统，避免固定全局 Hankel 数据集带来的冗余和失配
 
-**本文没有照搬其算法**，而是采用“基于参考投影系数的局部数据选择”。这里的 support 指某列数据对当前参考重构的贡献度。
-
 </div>
 <div>
 
@@ -155,22 +153,17 @@ Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive C
 
 **核心思想**
 
-- 非线性系统的 DeePC 性能依赖 operating point
-- 通过 measurable scheduling variable 描述当前工作点
-- 根据 scheduling variable 在线选择局部 Hankel matrices
-- 避免用单一全局 Hankel 表示覆盖所有非线性区域
-- 在 nonlinear benchmark 中验证优于固定 DeePC 配置
+- 它认为 DeePC 原本更适合线性系统，但很多真实系统是非线性的，而且系统行为会随运行状态变化。于是它让 DeePC 根据一个可以测量的变量，在线切换不同的局部 Hankel 数据矩阵。
+
 
 </div>
 <div>
 
-## 对本项目的启发
+## 启发
 
-**无人机的 trajectory phase 可作为调度变量**
+**无人机的 轨迹类型 可作为调度变量**
 
-- smooth：稳定跟踪，控制输入应更平滑
-- transition：速度方向或曲率变化，预测误差容易放大
-- step-like：目标突变，重点是减少超调和恢复时间
+- 同一套 DeePC 参数，在平稳跟踪、转弯、折弯里，不一定都合适。
 
 <div class="eq">
 (λ<sub>g</sub>, λ<sub>y</sub>)<sub>k</sub> = (λ<sub>g</sub>, λ<sub>y</sub>)(φ<sub>k</sub>)
