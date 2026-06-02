@@ -409,11 +409,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 **Static / baseline 轨迹图**
 
-<div class="placeholder">
-<strong>待补图</strong><br>
-figures/gazebo_static_baseline_xy.png<br>
-<span class="small">建议内容：XY 轨迹，含 reference 和 executed path</span>
-</div>
+![width:450px](figures/gazebo_static_baseline_xy.png)
 
 </div>
 <div>
@@ -425,30 +421,24 @@ figures/gazebo_static_baseline_xy.png<br>
 </div>
 </div>
 
-<div class="cols" style="margin-top:18px;">
-<div>
+<table style="width:100%; margin-top:18px;">
+<tr>
+<td style="width:50%; vertical-align:top;">
 
 **Static / baseline 误差曲线**
 
-<div class="placeholder">
-<strong>待补图</strong><br>
-figures/gazebo_static_baseline_error.png<br>
-<span class="small">建议内容：position error vs time，标出未收敛/漂移段</span>
-</div>
+![width:450px](figures/gazebo_static_baseline_error.png)
 
-</div>
-<div>
+</td>
+<td style="width:50%; vertical-align:top;">
 
 **Maneuver-aware / best branch 误差曲线**
 
-<div class="placeholder">
-<strong>待补图</strong><br>
-figures/gazebo_support384_off4_error.png<br>
-<span class="small">建议内容：position error vs time，和 baseline 同坐标轴</span>
-</div>
+![width:450px](figures/gazebo_support384_off4_error.png)
 
-</div>
-</div>
+</td>
+</tr>
+</table>
 
 ---
 
