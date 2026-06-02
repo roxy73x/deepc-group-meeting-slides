@@ -146,43 +146,43 @@ Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive C
 
 ---
 
-# 3. 参考工作二：Gain-Scheduling DeePC
+# 3. 参考工作二：Gain-Scheduled DeePC
 
 <div class="cols">
 <div>
 
-## GS-DeePC, 2025
+## Gain-Scheduled DeePC, 2025
 
 **核心思想**
 
-- 非线性系统存在明显 operating-region dependence
-- 不使用一个全局 Hankel 矩阵
-- 按可测 scheduling variable 划分局部工作区域
-- 每个区域构造局部 Hankel 数据表示
-- 通过区域切换处理非线性系统控制
+- 非线性系统的 DeePC 性能依赖 operating point
+- 通过 measurable scheduling variable 描述当前工作点
+- 根据 scheduling variable 在线选择局部 Hankel matrices
+- 避免用单一全局 Hankel 表示覆盖所有非线性区域
+- 在 nonlinear benchmark 中验证优于固定 DeePC 配置
 
 </div>
 <div>
 
 ## 对本项目的启发
 
-**无人机也有类似“工作区域/机动阶段”**
+**无人机的 trajectory phase 可作为调度变量**
 
 - smooth：稳定跟踪，控制输入应更平滑
-- transition：曲率或速度方向变化，预测误差容易放大
+- transition：速度方向或曲率变化，预测误差容易放大
 - step-like：目标突变，重点是减少超调和恢复时间
 
 <div class="eq">
-(λ_g, λ_y)_k = (λ_g, λ_y)(φ_k)
+(λ<sub>g</sub>, λ<sub>y</sub>)<sub>k</sub> = (λ<sub>g</sub>, λ<sub>y</sub>)(φ<sub>k</sub>)
 </div>
 
-这对应 **maneuver-aware parameter scheduling**。
+这对应本文的 **phase-conditioned regularization**。
 
 </div>
 </div>
 
 <div class="ref">
-Ref: Zieglmeier et al., “Gain-Scheduling Data-Enabled Predictive Control for Nonlinear Systems with Linearized Operating Regions”, 2025.
+Ref: Guerrero, Lakshminarayanan, Rojas, “Gain-Scheduled Data-Enabled Predictive Control: A DeePC Approach for Nonlinear Systems”, 2025.
 </div>
 
 ---
@@ -198,7 +198,7 @@ Ref: Zieglmeier et al., “Gain-Scheduling Data-Enabled Predictive Control for N
 **已有工作关注**
 
 - Select-DeePC：按当前任务选择相关数据
-- GS-DeePC：按工作区域切换局部 DeePC 表示
+- Gain-Scheduled DeePC：按工作点切换局部 DeePC 表示
 - 共同目标：提升非线性系统中的预测准确性和优化可行性
 
 </div>
@@ -224,7 +224,7 @@ Ref: Zieglmeier et al., “Gain-Scheduling Data-Enabled Predictive Control for N
 <table class="tbl compact">
 <tr><th>来源</th><th>文献中的思想</th><th>本文中的映射</th></tr>
 <tr><td>Select-DeePC</td><td>每个时刻根据当前轨迹选择相关数据列</td><td>不同 UAV phase 对应不同数据相关性：D<sub>k</sub>=D(φ<sub>k</sub>)</td></tr>
-<tr><td>GS-DeePC</td><td>用 measurable scheduling variable 选择局部 Hankel 表示</td><td>用可在线计算的 trajectory phase 作为 scheduling variable</td></tr>
+<tr><td>Gain-Scheduled DeePC</td><td>用 measurable scheduling variable 选择局部 DeePC 表示</td><td>用可在线计算的 trajectory phase 作为 scheduling variable</td></tr>
 <tr><td>本文 UAV 设计</td><td>参考轨迹几何与跟踪误差可直接在线获得</td><td>φ<sub>k</sub>=f(r<sub>k</sub>, r<sub>k−1</sub>, e<sub>k</sub>)</td></tr>
 </table>
 
