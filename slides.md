@@ -122,26 +122,26 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 先用当前参考构造一个参考一致的 DeePC 系数：
 
 <div class="eq small-eq">
-\( g_r = H^{\dagger}\begin{bmatrix}u_{\mathrm{ini}} \\ y_{\mathrm{ini}} \\ u_{\mathrm{ref}} \\ y_{\mathrm{ref}}\end{bmatrix} \)
+g<sub>r</sub> = H<sup>†</sup> [u<sub>ini</sub>; y<sub>ini</sub>; u<sub>ref</sub>; y<sub>ref</sub>]
 </div>
 
 用系数幅值作为 Hankel 列相关性评分：
 
 <div class="eq small-eq">
-\( s_i = |(g_r)_i|, \quad I_k = \operatorname{TopK}_i(s_i) \)
+s<sub>i</sub> = |(g<sub>r</sub>)<sub>i</sub>|,&nbsp;&nbsp; I<sub>k</sub> = TopK<sub>i</sub>(s<sub>i</sub>)
 </div>
 
 在 DeePC 中降低被选列的 g 正则化惩罚：
 
 <div class="eq small-eq">
-\( \lambda_g \lVert W_k^{1/2}g \rVert_2^2, \quad w_i=1\;(i\in I_k),\; w_i=w_{\mathrm{off}}\;(i\notin I_k) \)
+λ<sub>g</sub> ||W<sub>k</sub><sup>1/2</sup>g||<sub>2</sub><sup>2</sup>,&nbsp;&nbsp; w<sub>i</sub>=1 if i∈I<sub>k</sub>, else w<sub>i</sub>=w<sub>off</sub>
 </div>
 
 </div>
 </div>
 
 <div class="ref">
-Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive Control for Nonlinear Systems Using Online Data Selection”, 2025. 本文实现为 reference-support based soft local data selection。
+Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive Control for Nonlinear Systems Using Online Data Selection”, 2025. 本文实现为基于参考投影系数的软局部数据选择。
 </div>
 
 ---
