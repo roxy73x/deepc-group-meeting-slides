@@ -223,18 +223,15 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 更进一步，要把 DeePC 数据与 UAV 适配：把无人机轨迹几何特征显式用于此前的 Select-DeePC 和 Gain-Scheduled DeePC 中。主要修改包括：
 
-1. **Phase-balanced data dictionary**  
-   本文按 smooth / transition / step-like 组织飞行数据，使数据集中不仅有平滑飞行，也覆盖转弯、加减速和阶跃恢复过程。
+1. 按 smooth / transition / step-like 组织飞行数据，使数据集中不仅有平滑飞行，也覆盖转弯、加减速和阶跃恢复过程。
 
-2. **Trajectory-geometry phase detector**  
-   本文的相位标签由参考速度、参考加速度、曲率或目标跳变以及跟踪误差共同决定。
+2. 相位标签由参考速度、参考加速度、曲率或目标跳变以及跟踪误差共同决定。
 
 <div class="eq">
 φ<sub>k</sub> = f(v<sup>ref</sup><sub>k</sub>, a<sup>ref</sup><sub>k</sub>, κ<sup>ref</sup><sub>k</sub>, e<sub>k</sub>)
 </div>
 
-3. **Axis-aware weighting / metrics**  
-   单独分离 XY 平面误差和 Z 轴高度误差的权重设计
+3. 单独分离 XY 平面误差和 Z 轴高度误差的权重设计
 
 <div class="note">
 总而言之，本研究参考 Select-DeePC 和 Gain-Scheduled DeePC，特别面向无人机轨迹特征，设计了 **Maneuver-aware DeePC** 也就是 **机动感知 DeePC**。
@@ -273,21 +270,93 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 </div>
 
-<table class="tbl compact" style="margin-top:18px;">
-<tr><th>Trajectory</th><th>Static Position RMSE</th><th>Maneuver-aware Position RMSE</th><th>Paired Result</th></tr>
-<tr><td><strong>figure8</strong></td><td>0.0868 ± 0.0096</td><td class="good">0.0647 ± 0.0067</td><td class="good">10 / 10 wins</td></tr>
-<tr><td><strong>step</strong></td><td>0.1364 ± 0.0234</td><td class="good">0.1046 ± 0.0133</td><td class="good">10 / 10 wins</td></tr>
+---
+
+# 8. Gazebo-shape 简化仿真：Circle-Box / Half-Circle-Box 消融
+
+<div class="cols">
+<div>
+
+![width:560px](figures/gazebo_shape_circle_box_ablation_compare.png)
+
+</div>
+<div>
+
+![width:560px](figures/gazebo_shape_half_circle_box_ablation_compare.png)
+
+</div>
+</div>
+
+<div class="note">
+四方法分别为：Static、Local-data only、Bundles-only、Full Maneuver-Aware。当前这两条相位变化更明显的轨迹上，<strong>Bundles-only</strong> 都是最优。
+</div>
+
+---
+
+# 9. Gazebo-shape 简化仿真：Rounded-Arc-Rect / D-Shape 消融
+
+<div class="cols">
+<div>
+
+![width:560px](figures/gazebo_shape_rounded_arc_rect_ablation_compare.png)
+
+</div>
+<div>
+
+![width:560px](figures/gazebo_shape_d_shape_smooth_ablation_compare.png)
+
+</div>
+</div>
+
+<div class="note">
+这两条轨迹几乎全处于 <code>transition</code>。结果同样显示：<strong>local-data only</strong> 不能单独带来收益，<strong>full maneuver-aware</strong> 也没有超过 <strong>bundles-only</strong>。
+</div>
+
+---
+
+# 11. Gazebo-shape 简化仿真：四方法结论表
+
+<table class="tbl compact">
+<tr>
+<th>Trajectory</th>
+<th>Static</th>
+<th>Local-data only</th>
+<th>Bundles-only</th>
+<th>Full MA</th>
+</tr>
+<tr>
+<td><strong>circle_box</strong></td>
+<td class="bad">0.3031</td>
+<td>0.2266</td>
+<td>0.2285</td>
+<td class="good">0.1849</td>
+</tr>
+<tr>
+<td><strong>half_circle_box</strong></td>
+<td class="bad">0.2553</td>
+<td>0.1759</td>
+<td>0.1816</td>
+<td class="good">0.1400</td>
+</tr>
+<tr>
+<td><strong>rounded_arc_rect</strong></td>
+<td class="bad">0.3157</td>
+<td>0.2249</td>
+<td>0.2112</td>
+<td class="good">0.1565</td>
+</tr>
+<tr>
+<td><strong>d_shape_smooth</strong></td>
+<td class="bad">0.4780</td>
+<td>0.3389</td>
+<td>0.2940</td>
+<td class="good">0.2138</td>
+</tr>
 </table>
 
 ---
 
-# 8. 主结果图
-
-![width:920px](figures/fig02_main_results.png)
-
----
-
-# 9. Gazebo 模型的特殊性
+# 12. Gazebo 模型的特殊性
 
 Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差别在于：
 
@@ -320,7 +389,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 10. Gazebo 分支对比：量化结果
+# 13. Gazebo 分支对比：量化结果
 
 目前仓库中只有 best branch 的轨迹图，因此这里先用分支表说明对比关系：
 
@@ -338,7 +407,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 11. Gazebo Circle-Box 对比：Static vs Maneuver-Aware
+# 14. Gazebo Circle-Box 对比：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -359,7 +428,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 12. Gazebo Circle-Easy：Static vs Maneuver-Aware
+# 15. Gazebo Circle-Easy：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -380,7 +449,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 13. Gazebo Circle-Easy 方法消融
+# 16. Gazebo Circle-Easy 方法消融
 
 <div class="cols">
 <div>
@@ -426,7 +495,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 14. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
+# 17. Gazebo Circle-Box（Causal Alignment）：Static vs Maneuver-Aware
 
 <div class="cols">
 <div>
@@ -447,7 +516,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 15. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
+# 18. Circle-Box 不同 Horizon 对比：N=25 vs N=40 vs N=80
 
 <div class="cols">
 <div>
@@ -493,7 +562,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 16. 当前 Gazebo 结论
+# 19. 当前 Gazebo 结论
 
 当前 Gazebo 结果的结论要谨慎表述：
 
@@ -507,7 +576,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 17. 下一步计划
+# 20. 下一步计划
 
 1. 固定自写仿真中的公平 baseline，补充 phase-resolved RMSE
 2. 对 λ<sub>g</sub>、λ<sub>y</sub> 做更系统的网格搜索和消融
@@ -517,7 +586,7 @@ Gazebo 中的 quadrotor tracking 问题比自写简化仿真更难，主要差�
 
 ---
 
-# 18. 总结
+# 21. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
