@@ -28,10 +28,10 @@ strong { color: #1e40af; }
 .box { border: 1px solid #dbeafe; border-radius: 14px; padding: 18px 20px; background: #ffffff; }
 .bluebox { background: #eff6ff; }
 .tbl { width: 100%; border-collapse: collapse; font-size: 23px; }
-.tbl.compact { font-size: 19px; }
+.tbl.compact { font-size: 18px; }
 .tbl th { background: #eff6ff; color: #1e40af; }
 .tbl th, .tbl td { border: 1px solid #bfdbfe; padding: 11px 12px; text-align: center; vertical-align: middle; }
-.tbl.compact th, .tbl.compact td { padding: 9px 10px; }
+.tbl.compact th, .tbl.compact td { padding: 8px 9px; }
 .good { color: #16a34a; font-weight: 700; }
 .eq { font-family: "Times New Roman", "Cambria Math", serif; font-size: 34px; text-align: center; color: #1e40af; margin: 18px 0; }
 .ref { font-size: 16px; color: #64748b; margin-top: 10px; }
@@ -200,98 +200,114 @@ Ref: Zieglmeier et al., “Gain-Scheduling Data-Enabled Predictive Control for N
 </div>
 
 <div class="note">
-本项目不是重新提出 DeePC，而是形成 UAV-aware phase-conditioned DeePC：按无人机轨迹阶段定义 phase，并在后续加入 hover-centered input、飞行包线约束和 phase-dependent data selection。
+本项目不是重新提出 DeePC，而是形成 UAV-aware phase-conditioned DeePC：按无人机轨迹阶段定义 phase，并加入 hover-centered input、飞行包线约束和 phase-dependent data interface。
 </div>
 
 ---
 
-# 5. 方法框架：phase-conditioned regularization
+# 5. 方法框架：公式来源与参数调度
 
-相位标签由参考轨迹变化和跟踪误差共同决定：
+相位变量 φ<sub>k</sub> 不是从某篇论文中直接照搬的公式，而是把两篇参考工作的思想映射到 UAV 轨迹跟踪中：
+
+<table class="tbl compact">
+<tr><th>来源</th><th>文献中的思想</th><th>本文中的映射</th></tr>
+<tr><td>Select-DeePC</td><td>每个时刻根据当前轨迹选择相关数据列</td><td>不同 UAV phase 对应不同数据相关性：D<sub>k</sub>=D(φ<sub>k</sub>)</td></tr>
+<tr><td>GS-DeePC</td><td>用 measurable scheduling variable 选择局部 Hankel 表示</td><td>用可在线计算的 trajectory phase 作为 scheduling variable</td></tr>
+<tr><td>本文 UAV 设计</td><td>参考轨迹几何与跟踪误差可直接在线获得</td><td>φ<sub>k</sub>=f(r<sub>k</sub>, r<sub>k−1</sub>, e<sub>k</sub>)</td></tr>
+</table>
 
 <div class="eq">
 φ<sub>k</sub> = f(r<sub>k</sub>, r<sub>k−1</sub>, e<sub>k</sub>) ∈ { smooth, transition, step-like }
 </div>
 
-参数选择不是理论最优解，而是基于 static baseline 和初步参数扫描得到的经验折中：
+---
+
+# 6. 方法框架：超参数选择理由
+
+当前先验证 phase-conditioned regularization，因此根据 phase 选择 DeePC 正则化参数：
 
 <table class="tbl compact">
 <tr><th>Phase</th><th>λ<sub>g</sub></th><th>λ<sub>y</sub></th><th>选择理由</th></tr>
 <tr><td>smooth</td><td>30</td><td>1.0e4</td><td>沿用 static baseline；较强 g 正则化抑制过拟合和输入抖动</td></tr>
-<tr><td>transition</td><td>20</td><td>1.2e4</td><td>适当降低 λ<sub>g</sub> 提高响应灵活性；提高 λ<sub>y</sub> 容忍轨迹切换时的数据不匹配</td></tr>
+<tr><td>transition</td><td>20</td><td>1.2e4</td><td>降低 λ<sub>g</sub> 提高响应灵活性；提高 λ<sub>y</sub> 容忍轨迹切换时的数据不匹配</td></tr>
 <tr><td>step-like</td><td>12</td><td>1.0e4</td><td>进一步降低 λ<sub>g</sub>，避免目标突变时控制过于保守；λ<sub>y</sub> 保持 baseline 防止误差被过度松弛</td></tr>
 </table>
 
 <div class="note">
-这组参数目前用于验证“按阶段调参是否有收益”。后续需要更系统的网格搜索、phase-resolved 指标和消融实验确认其泛化性。
+这组参数不是理论最优解，而是基于 static baseline 和初步参数扫描得到的经验折中。后续需要通过更系统的网格搜索、phase-resolved 指标和消融实验确认泛化性。
 </div>
 
 ---
 
-# 6. UAV-specific adaptations
+# 7. UAV-specific controller adaptations
 
-在基础 phase-aware DeePC 之上，可以做几类面向四旋翼的特殊适配：
+这一页讲的是**控制器层面的 UAV 适配**：把 DeePC 的输入、约束和安全边界改成更符合四旋翼执行特性的形式。
 
 <div class="cols">
 <div>
 
-**Hover-centered input**
+**1. Hover-centered input**
 
-- 不直接优化绝对控制量，而是优化相对悬停输入的增量
+本文不直接优化绝对控制量，而是优化相对悬停输入的增量：
 
 <div class="eq">
 u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 </div>
 
+这样可以把控制量限制在悬停附近，减少无意义的大推力偏置。
+
 </div>
 <div>
 
-**Flight-envelope constraints**
+**2. Flight-envelope constraints**
 
-- 对速度、加速度、推力、倾角、输入变化率加约束
-- 避免 DeePC 为追踪误差给出过激控制量
+本文在 DeePC 优化中加入 UAV 执行安全边界：
 
 <div class="eq">
 Δu<sub>k</sub> ∈ U<sub>safe</sub>, &nbsp; y<sub>k</sub> ∈ Y<sub>safe</sub>
 </div>
 
+约束对象包括输入幅值、输入变化率、速度/加速度上界和轨迹误差边界。
+
 </div>
 </div>
 
 <div class="note">
-这样做以后，方法就不是简单的 phase-aware DeePC，而是结合了四旋翼悬停平衡点、飞行包线和执行安全约束的 UAV-aware DeePC。
+区别：这一页处理的是 controller formulation，即 DeePC 优化变量、输入形式和安全约束如何适配 UAV。
 </div>
 
 ---
 
-# 7. UAV-specific data and phase design
+# 8. UAV-specific phase/data design
+
+这一页讲的是**数据与相位层面的 UAV 适配**：把无人机轨迹几何特征显式用于 phase detection、数据组织和指标分析。
 
 1. **Phase-balanced data dictionary**  
-   数据集中不能只有平滑飞行，还需要覆盖转弯、加减速、阶跃响应等机动片段。
+   本文按 smooth / transition / step-like 组织飞行数据，使数据集中不仅有平滑飞行，也覆盖转弯、加减速和阶跃恢复过程。
 
 2. **Trajectory-geometry phase detector**  
-   相位不只由误差决定，也由参考轨迹的速度、加速度、曲率或目标跳变决定。
+   本文的相位标签由参考速度、参考加速度、曲率或目标跳变以及跟踪误差共同决定。
 
 <div class="eq">
 φ<sub>k</sub> = f(v<sup>ref</sup><sub>k</sub>, a<sup>ref</sup><sub>k</sub>, κ<sup>ref</sup><sub>k</sub>, e<sub>k</sub>)
 </div>
 
-3. **Axis-aware weighting**  
-   四旋翼的 XY 平面运动和 Z 轴高度控制难度不同，可以对 XY / Z 误差设置不同权重。
+3. **Axis-aware weighting / metrics**  
+   本文区分 XY 平面误差和 Z 轴高度误差，用于权重设计和结果分析。
 
-<div class="eq">
-||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> = q<sub>xy</sub> ||e<sub>xy</sub>||<sup>2</sup> + q<sub>z</sub> e<sub>z</sub><sup>2</sup>
+<div class="note">
+区别：这一页处理的是 data and phase design，即怎么定义 phase、怎么组织数据、怎么分析 UAV tracking 误差。
 </div>
 
 ---
 
-# 8. 方法图
+# 9. 方法图
 
 ![width:920px](figures/fig01_method_overview.png)
 
 ---
 
-# 9. 已有实验设置
+# 10. 已有实验设置
 
 实验采用最终协议 A：
 
@@ -326,7 +342,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 10. 多 seed 结果
+# 11. 多 seed 结果
 
 <table class="tbl">
 <tr>
@@ -351,13 +367,13 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 11. 主结果图
+# 12. 主结果图
 
 ![width:920px](figures/fig02_main_results.png)
 
 ---
 
-# 12. Phase timeline 图
+# 13. Phase timeline 图
 
 ![width:920px](figures/fig03_phase_timeline.png)
 
@@ -367,7 +383,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 13. 结果如何解释
+# 14. 结果如何解释
 
 当前结果支持的结论：
 
@@ -387,7 +403,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 14. 需要补的评价指标
+# 15. 需要补的评价指标
 
 <div class="cols3">
 <div class="box">
@@ -422,7 +438,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 15. 难点一：相位定义不能太启发式
+# 16. 难点一：相位定义不能太启发式
 
 相位标签需要满足：
 
@@ -436,7 +452,7 @@ u<sub>k</sub> = u<sub>hover</sub> + Δu<sub>k</sub>
 
 ---
 
-# 16. 难点二：数据越干净不一定越好
+# 17. 难点二：数据越干净不一定越好
 
 DeePC 依赖数据字典覆盖系统行为。采集数据时存在一个矛盾：
 
@@ -451,7 +467,7 @@ data quality &nbsp; vs. &nbsp; persistence of excitation
 
 ---
 
-# 17. 难点三：horizon 和数据集匹配
+# 18. 难点三：horizon 和数据集匹配
 
 预测时域 N 不是单调调参旋钮。
 
@@ -465,7 +481,7 @@ N<sub>dataset</sub> = N<sub>controller</sub>
 
 ---
 
-# 18. 难点四：Gazebo / ROS 验证
+# 19. 难点四：Gazebo / ROS 验证
 
 Gazebo 验证的目标不是刷主结果，而是说明方法能进入更真实的控制链路。
 
@@ -481,13 +497,13 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 19. Gazebo 轨迹预览
+# 20. Gazebo 轨迹预览
 
 ![width:860px](figures/gazebo_support384_off4_time_colored_xy.png)
 
 ---
 
-# 20. 下一步计划
+# 21. 下一步计划
 
 1. 固定公平 baseline，避免 static DeePC 太弱
 2. 补充 phase-resolved RMSE 和 phase occupancy
@@ -497,7 +513,7 @@ history should record (u<sub>k−1</sub>, y<sub>k</sub>), not (u<sub>k</sub>, y<
 
 ---
 
-# 21. 总结
+# 22. 总结
 
 - 当前项目不应表述为“复现 DeePC 无人机控制器”
 - 更合适的表述是：**面向多机动阶段的 phase-aware UAV DeePC**
