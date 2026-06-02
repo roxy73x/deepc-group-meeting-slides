@@ -37,6 +37,7 @@ strong { color: #1e40af; }
 .good { color: #16a34a; font-weight: 700; }
 .bad { color: #dc2626; font-weight: 700; }
 .eq { font-family: "Times New Roman", "Cambria Math", serif; font-size: 34px; text-align: center; color: #1e40af; margin: 18px 0; }
+.eq.small-eq { font-size: 27px; margin: 10px 0; }
 .ref { font-size: 16px; color: #64748b; margin-top: 10px; }
 img { max-width: 100%; max-height: 430px; object-fit: contain; }
 </style>
@@ -104,35 +105,43 @@ min Σ ||y<sub>k</sub> − r<sub>k</sub>||<sub>Q</sub><sup>2</sup> + Σ ||u<sub>
 
 ## Choose Wisely, 2025
 
-**核心思想**
+**为什么参考它**
 
-- 面向非线性系统，标准 DeePC 的全局数据矩阵可能包含大量无关数据
-- 每个控制时刻只选择最相关的数据列
-- 用局部相关数据在 trajectory space 中隐式线性化当前系统行为
-- 文中验证了 norm-based 与 manifold-embedding-based selection
+- 主题直接对应：online data selection for DeePC
+- Florian Dörfler 是 DeePC 原始方向的重要作者之一
+- 核心思想：每个时刻只使用与当前任务更相关的数据
+- 面向非线性系统，避免固定全局 Hankel 数据集带来的冗余和失配
+
+**本文没有照搬其算法**，而是采用更简单的 support-based heuristic。
 
 </div>
 <div>
 
-## 对本项目的启发
+## 本文数据选择公式
 
-**不是所有飞行数据都同等有用**
+先用当前参考构造一个参考一致的 DeePC 系数：
 
-- smooth tracking 需要平滑稳定数据
-- transition 需要包含转弯、加减速的数据
-- step-like 需要覆盖目标突变后的恢复过程
-
-<div class="eq">
-D_k = D(φ_k)
+<div class="eq small-eq">
+g_r = H^† [u_{ini}; y_{ini}; u_{ref}; y_{ref}]
 </div>
 
-这自然引出 **phase-dependent local data selection**。
+用系数幅值作为 Hankel 列相关性评分：
+
+<div class="eq small-eq">
+s_i = |g_{r,i}|, \quad I_k = TopK_i(s_i)
+</div>
+
+在 DeePC 中降低被选列的 g 正则化惩罚：
+
+<div class="eq small-eq">
+λ_g ||W_k^{1/2} g||^2, \quad w_i = 1 \; (i∈I_k), \; w_i=w_{off} \; (i∉I_k)
+</div>
 
 </div>
 </div>
 
 <div class="ref">
-Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive Control for Nonlinear Systems Using Online Data Selection”, 2025.
+Ref: Näf, Moffat, Eising, Dörfler, “Choose Wisely: Data-Enabled Predictive Control for Nonlinear Systems Using Online Data Selection”, 2025. 本文实现为 reference-support based soft local data selection。
 </div>
 
 ---
